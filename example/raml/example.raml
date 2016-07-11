@@ -1,0 +1,30 @@
+#%RAML 0.8
+---
+title: CMS Internal API
+
+baseUri: http://localhost/
+
+
+/api:
+    /version:
+        description: Gets the current version (means servers running)
+
+        get:
+            responses:
+                200:
+                    body:
+                        application/json:
+                            example: |
+                                {
+                                    "version": "123-alpha1"
+                                }
+
+    /example:
+        description: some example.
+        get:
+            responses:
+                200:
+                    description: An example output
+                    body:
+                        application/json:
+                            example: !include json/example.json
