@@ -82,7 +82,7 @@ def _generate_patterns(resource_map, function_map):
                                     example = resource.methods['post'].responses[200].body['application/json'].example
 
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedPOSTAPI, {'target': function_map[t_url], 'schema': schema, 'expected_params': expected_params}))
+                    patterns.append(url("^%s$" % t_url, ValidatedPostAPI, {'target': function_map[t_url], 'schema': schema, 'expected_params': expected_params}))
                 else:
                     patterns.append(url("^%s$" % t_url, ExamplePostAPI, {'example': example, 'schema': schema}))
 
@@ -98,7 +98,7 @@ def _generate_patterns(resource_map, function_map):
                                     example = resource.methods['get'].responses[200].body['application/json'].example
 
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedGETAPI, {'target': function_map[t_url], 'expected_params': expected_params}))
+                    patterns.append(url("^%s$" % t_url, ValidatedGetAPI, {'target': function_map[t_url], 'expected_params': expected_params}))
                 else:
                     patterns.append(url("^%s$" % t_url, ExampleGetAPI, {'example': example, 'schema': schema}))
 
@@ -134,7 +134,6 @@ def _parse_child(resource, resource_map, to_look_at, path):
 def ExampleGetAPI(request, schema, example):
 
     return Response(_example_api(request, schema, example))
-
 
 
 @api_view(["POST"])
@@ -184,7 +183,7 @@ def _is_valid_query(params, expected_params):
 
 
 @api_view(["GET"])
-def ValidatedGETAPI(request, expected_params, target):
+def ValidatedGetAPI(request, expected_params, target):
     """
     Validate GET APIs.
     """
@@ -194,7 +193,7 @@ def ValidatedGETAPI(request, expected_params, target):
 
 
 @api_view(["POST"])
-def ValidatedPOSTAPI(request, schema, expected_params, target):
+def ValidatedPostAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
     """

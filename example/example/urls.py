@@ -18,6 +18,8 @@ from django.contrib import admin
 
 from ramlwrap import RamlWrap
 
+from someapp.api.version import version
+
 # Original old style url patterns
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -25,7 +27,7 @@ urlpatterns = [
 
 # new ramlwrap function map
 function_map = {
-
+    "api/version": version
 }
 
 urlpatterns.extend(RamlWrap.url_patterns("raml/example.raml", function_map))
