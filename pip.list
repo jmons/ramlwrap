@@ -1,0 +1,9 @@
+Django==1.9.7
+django-rest-utils==0.0.5
+djangorestframework==3.3.3
+functools32==3.2.3.post2
+jsonschema==2.5.1
+PyDataLoader==0.1.3
+pyraml-parser==0.1.5
+PyYAML==3.11
+six==1.10.0
