@@ -1,3 +1,5 @@
-This version of Ramlwrap brings in some source code to help with Swagger as well as a few minor bug fixes. It is a placeholder before a restructure to allow for a Pip install.
+Ramlwrap is a toolkit for Django which allows a combination of rapid server prototyping as well as enforcement of API definition from the RAML api.
 
-The big commit is a merge from a private copy of Ramlwrap.
+RAML (and swagger) allow for rapid specification of API's, but it can be hard to know if your engineers have programmed exactly what the API is, and that your code is enforcing the same schema that you have defined. Ramlwrap bridges the gap between the specification and the code. A developer provides a mapping table of URL to function, and the raml wrap builds a wrapper around those functions where validation of data occurs.
+
+When coupled with auto documentation (raml2html) this allows a fully integrated specification and code deployment to occur.
