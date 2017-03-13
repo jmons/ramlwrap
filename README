@@ -1,27 +1,3 @@
-This is an example at the moment, not a fully fledged python package.
+This version of Ramlwrap brings in some source code to help with Swagger as well as a few minor bug fixes. It is a placeholder before a restructure to allow for a Pip install.
 
-you need the ramlwrap module in your django project... copy and paste it in for now (tm)
-
-and you need to make some exception middleware (not included) to catch the exception
-
-Annnd you need of course, an app.
-
-(pre - make a virtualenv, and install the pip list (pip install -r pip.list)
-
-What i did to make this:
-
-
-1) make a django project
-2) copy the ramlwrap folder in
-3) start a new app (python manage.py startsomeapp0
-4) add that new app to the project/settings.py installed_apps
-5) make a folder called raml and put your raml in.
-6) now, in the project/urls, copy the template for my raml..
-
-7) this bit reeats: write an api, and add the mapping for that in.
-
-In the example/urls you can see ive mapped ONE function, but there are TWO in the raml - so one will return the example,
-and one will return the result from the api i put into someapp.
-
-notice i made a new module called API so i can put one per file in there to help with .. later...
-
+The big commit is a merge from a private copy of Ramlwrap.

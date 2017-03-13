@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "required": [
+    "animal",
+    "status"
+  ],
+  "properties": {
+    "animal": {
+      "type": "string",
+      "example": "dog"
+    },
+    "status": {
+      "type": "string",
+      "example": "Fluffy"
+    }
+  }
+}
