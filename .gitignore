@@ -1,0 +1,22 @@
+# python
+*.pyc
+
+# pycharm
+.idea
+
+# virtualenvironments (for dev)
+venv
+
+# local_settings.py (Specifically)
+local_settings.py
+
+# Python coverage files and generated outputs (in any folder)
+.coverage
+coverage.xml
+htmlcov/
+
+# Random Mac Files
+.DS_Store
+
+# Databases
+*.sqlite3

@@ -1,6 +1,12 @@
+
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+
 import json
 
-from ramlwrap.RamlWrap import ramlwrap
+from ramlwrap import ramlwrap
 from ramlwrap.utils.validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGETAPI, _is_valid_query, _example_api
 from ramlwrap.utils.raml import raml_url_patterns
 from ramlwrap.utils.swaggle import swagger_url_patterns
