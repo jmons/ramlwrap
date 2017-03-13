@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Schema for turtle request.",
+  "type":"object",
+  "required":[
+    "name",
+    "bandanaColour",
+    "weapon"
+  ],
+  "properties":{
+    "name":{
+      "description": "Turtles name.",
+      "type":"string"
+    },
+    "bandanaColour":{
+      "description":"Turtles bandana colour.",
+      "type":"string"
+    },
+    "weapon":{
+      "description":"Turtles favourite weapon.",
+      "type":"string"
+    }
+  }
+}

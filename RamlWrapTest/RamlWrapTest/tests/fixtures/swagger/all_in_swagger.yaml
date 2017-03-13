@@ -1,0 +1,71 @@
+swagger: "2.0"
+info:
+  description:
+    Test Swagger file
+  version: "1.0.0"
+  title: Simple API
+paths:
+  /suprise_pet:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref:  "#/definitions/petResponse"
+        "400":
+          description: ERROR
+          schema:
+            $ref:  "#/definitions/Error"
+  /choose_pet:
+    post:
+      description: Choose a pet
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: chooseAPet
+          in: body
+          description: ""
+          schema:
+            $ref: "#/definitions/petRequest"
+      responses:
+        "200":
+          description: Successfully chose a pet
+          schema:
+            $ref:  "#/definitions/petResponse"
+        "400":
+          description: ERROR
+          schema:
+            $ref:  "#/definitions/Error"
+definitions:
+  petRequest:
+    type: object
+    required:
+      - animalWanted
+    properties:
+      animalWanted:
+        type: string
+        minimum: 3
+        pattern: "^[a-zA-Z0-9-]+$"
+        example: cat
+  petResponse:
+    type: object
+    required:
+      - animal
+      - status
+    properties:
+      animal:
+        type: string
+        example: dog
+      status:
+        type: string
+        example: Fluffy
+  Error:
+    type: string
+    required:
+      - errorType
+    properties:
+      errorType:
+        type: string
+        example: Argggh something went wrong!!!

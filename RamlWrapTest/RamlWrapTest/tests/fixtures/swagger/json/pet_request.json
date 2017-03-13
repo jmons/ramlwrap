@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": [
+    "animalWanted"
+  ],
+  "properties": {
+    "animalWanted": {
+      "type": "string",
+      "minimum": 3,
+      "pattern": "^[a-zA-Z0-9-]+$",
+      "example": "cat"
+    }
+  }
+}

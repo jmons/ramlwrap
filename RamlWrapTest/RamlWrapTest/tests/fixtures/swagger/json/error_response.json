@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": [
+    "errorType"
+  ],
+  "properties": {
+    "errorType": {
+      "type": "string",
+      "example": "Argggh something went wrong!!!"
+    }
+  }
+}
