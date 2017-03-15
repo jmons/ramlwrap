@@ -20,3 +20,8 @@ htmlcov/
 
 # Databases
 *.sqlite3
+
+#Build folders:
+dist/
+build/
+ramlwrap.egg-info/
