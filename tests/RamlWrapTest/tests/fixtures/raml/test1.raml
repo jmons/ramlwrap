@@ -1,7 +1,7 @@
 #%RAML 0.8
 ---
-title: CMS External API
-description: The interface between CMS and external services (AES and TMS) is defined in this RAML. Due to the encryption of the request, the same API call is used for all communication with external systems.
+title: Test Example API
+description: An example api.
 version:  v0.1
 mediaType:  application/json
 baseUri: http://{{serverName}}/
@@ -12,9 +12,9 @@ baseUriParameters:
   serverName:
     description: The name of the server (so as to allow templating)
 
-/cms:
-  displayName: CMS
-  description: MasterCard Credential Management System
+/app1:
+  displayName: App1
+  description: Application one
   post:
     description: Request contains service request
     body:
@@ -23,16 +23,15 @@ baseUriParameters:
             example: !include json/service_request_example.json
     responses:
         200:
-            description: Encrypted service response
+            description: A response
             body:
                 application/json:
-                    #schema: !include json/service_response.json
                     example: "{ 'data': 'foo' }"
         500:
 
-/cms2:
-    displayName: CMS2
-    description: MasterCard Credential Management System
+/app2:
+    displayName: App2
+    description: A second application request
     post:
       description: Request contains service request
       body:
@@ -44,7 +43,6 @@ baseUriParameters:
               description: Encrypted service response
               body:
                   application/json:
-                      #schema: !include json/service_response.json
                       example: "{ 'data': 'foo' }"
           500:
     /foo:
@@ -56,7 +54,7 @@ baseUriParameters:
             post:
                 description: booom
 
-/cms3:
+/app3:
     displayName: CMS3
     /foo:
         displayName: Woo
