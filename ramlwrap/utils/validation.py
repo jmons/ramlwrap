@@ -21,7 +21,7 @@ def ExampleAPI(request, schema, example):
 def _example_api(request, schema, example):
 
     if schema:
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode("utf-8"))
         validate(data, schema)
 
     if not example:
@@ -79,7 +79,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     if schema:
         # If there is a problem with the json data, return a 400.
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode("utf-8"))
         except Exception as e:
             raise FatalException("Malformed JSON in the request.", 400)
 
