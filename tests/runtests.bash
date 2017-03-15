@@ -2,7 +2,7 @@
 
 echo "Running python 2.7 tests first"
 
-rm -rf venv & true
+rm -rf venv | true
 
 virtualenv -p python2.7 venv
 source venv/bin/activate
@@ -21,7 +21,7 @@ fi
 
 echo "The python 2.7 tests passed - trying on python 3"
 
-rm -rf venv & true
+rm -rf venv | true
 
 virtualenv -p python3 venv
 source venv/bin/activate
