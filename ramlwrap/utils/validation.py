@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def ExampleAPI(request, schema, example):
 
-    return Response(_example_api(request, schema, example))
+    return HttpResponse(_example_api(request, schema, example))
 
 
 def _example_api(request, schema, example):
