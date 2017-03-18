@@ -26,7 +26,7 @@ def _example_api(request, schema, example):
     if not example:
         return None
     else:
-        return json.loads(example)
+        return example
 
 
 def _is_valid_query(params, expected_params):
