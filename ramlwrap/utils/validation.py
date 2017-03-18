@@ -1,20 +1,17 @@
 import json
 import logging
 
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 from django.views.decorators.csrf import csrf_exempt
+from django.http.response import HttpResponse
 
 from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
-@api_view(["POST"])
 def ExampleAPI(request, schema, example):
 
     return Response(_example_api(request, schema, example))
@@ -59,17 +56,20 @@ def _is_valid_query(params, expected_params):
     return True
 
 @csrf_exempt
-@api_view(["GET"])
 def ValidatedGETAPI(request, expected_params, target):
     """
     Validate GET APIs.
     """
 
     if _is_valid_query(request.GET, expected_params):
-        return target(request)
+        response = target(request)
+
+        if isinstance(response, HttpResponse):
+            return response
+        else:
+            return HttpResponse(json.dumps(response))
 
 @csrf_exempt
-@api_view(["POST"])
 def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
@@ -95,11 +95,16 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
                 "code": e.validator
             }
             logger.info(message)
-            return Response(error_response, status=422)
+            return HttpResponse(error_response, status=422)
     else:
         data = json.loads(request.body.decode('utf-8'))
 
     # Add validated data to request
     request.validated_data = data
 
-    return target(request)
+    response = target(request)
+
+    if isinstance(response, HttpResponse):
+        return response
+    else:
+        return HttpResponse(json.dumps(response))
