@@ -30,7 +30,7 @@ class RamlWrapTestCase(TestCase):
     def test_ramlwrap_success(self):
 
         funcmap_1 = {
-            "cms2": _internal_mockfunc,
+            "app2": _internal_mockfunc,
             "turtle": _internal_mockfunc,
             "turtle/quote": _internal_mockfunc
         }
@@ -48,6 +48,7 @@ class RamlWrapTestCase(TestCase):
 
         # Test with Swagger file - all details within same file
         self.assertTrue(ramlwrap("RamlWrapTest/tests/fixtures/swagger/all_in_swagger.yaml", funcmap_2))
+
 
     def test_ramlwrap_fail(self):
 
@@ -71,7 +72,7 @@ class RamlWrapTestCase(TestCase):
     def test_raml_url_patterns(self):
 
         funcmap = {
-            "cms2": _internal_mockfunc,
+            "app2": _internal_mockfunc,
             "turtle": _internal_mockfunc,
             "turtle/quote": _internal_mockfunc
         }
@@ -81,32 +82,37 @@ class RamlWrapTestCase(TestCase):
         # These urls should now match, and have a function and default args as defined
         urls_to_test = [
             {
-                'url': "cms2",
+                'url': "app2",
                 'function': ValidatedPOSTAPI,
-                'default_args': {'target': _internal_mockfunc, 'schema': {u'$schema': u'http://json-schema.org/draft-04/schema#', u'required': [u'associatedData', u'cipherText', u'startingVariable'], u'type': u'object', u'description': u'Schema for CMS service request. See Decrypt function on pg 225 in CMS spec for more detail of contents', u'properties': {u'associatedData': {u'type': u'string', u'description': u"Associated data in format 'Sender_ID; ServiceRequest_ID; Service_ID;', See pg 128 in CMS spec for more info. Sender_ID is used to identify CCM key."}, u'cipherText': {u'type': u'string', u'description': u'Data authenticated and encrypted'}, u'startingVariable': {u'type': u'string', u'description': u'Starting Variable (nonce)'}}}}
+                'default_args': {
+                    'target': _internal_mockfunc, 
+                    'schema': {"$schema": "http://json-schema.org/draft-04/schema#", "description": "Schema for a request", "type": "object", "required": ["data"], "properties": {"data": {"description": "Some data that is required", "type": "string"}}}
+                }
             },
             {
-                'url': "cms2/foo",
+                'url': "app2/foo",
                 'function': ExampleAPI,
                 'default_args': {'example': None}
             },
             {
-                'url': "cms",
+                'url': "app1",
                 'function': ExampleAPI,
                 'default_args': {'example': "{ 'data': 'foo' }"}
             },
             {
                 'url': "turtle",
                 'function': ValidatedGETAPI,
-                'default_args': {'target': _internal_mockfunc, 'expected_params': {'name': {'repeat': None, 'displayName': 'Name', 'name': None, 'default': None, 'pattern': None, 'enum': None, 'maximum': None, 'required': True, 'minimum': None, 'minLength': None, 'maxLength': None, 'type': 'string', 'example': 'Michelangelo', 'description': None}}}
+                'default_args': {
+                    'target': _internal_mockfunc, 
+                    'expected_params': {'name': {'repeat': None, 'displayName': 'Name', 'name': None, 'default': None, 'pattern': None, 'enum': None, 'maximum': None, 'required': True, 'minimum': None, 'minLength': None, 'maxLength': None, 'type': 'string', 'example': 'Michelangelo', 'description': None}}}
             },
             {
-                'url': "cms2/foo/bar",
+                'url': "app2/foo/bar",
                 'function': ExampleAPI,
                 'default_args': {'example': None}
             },
             {
-                'url': "cms3/foo/bar",
+                'url': "app3/foo/bar",
                 'function': ExampleAPI,
                 'default_args': {'example': None}
             }

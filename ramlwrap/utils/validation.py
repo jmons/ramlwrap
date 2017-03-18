@@ -1,33 +1,32 @@
 import json
 import logging
 
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http.response import HttpResponse
 
 from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
 
-
-@api_view(["POST"])
+@csrf_exempt
 def ExampleAPI(request, schema, example):
 
-    return Response(_example_api(request, schema, example))
+    return HttpResponse(_example_api(request, schema, example))
 
 
 def _example_api(request, schema, example):
 
     if schema:
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode("utf-8"))
         validate(data, schema)
 
     if not example:
         return None
     else:
-        return json.loads(example)
+        return example
 
 
 def _is_valid_query(params, expected_params):
@@ -56,18 +55,21 @@ def _is_valid_query(params, expected_params):
     # TODO Add more checks here.
     return True
 
-
-@api_view(["GET"])
+@csrf_exempt
 def ValidatedGETAPI(request, expected_params, target):
     """
     Validate GET APIs.
     """
 
     if _is_valid_query(request.GET, expected_params):
-        return target(request)
+        response = target(request)
 
+        if isinstance(response, HttpResponse):
+            return response
+        else:
+            return HttpResponse(json.dumps(response))
 
-@api_view(["POST"])
+@csrf_exempt
 def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
@@ -79,7 +81,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     if schema:
         # If there is a problem with the json data, return a 400.
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode("utf-8"))
         except Exception as e:
             raise FatalException("Malformed JSON in the request.", 400)
 
@@ -93,11 +95,16 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
                 "code": e.validator
             }
             logger.info(message)
-            return Response(error_response, status=422)
+            return HttpResponse(error_response, status=422)
     else:
         data = json.loads(request.body.decode('utf-8'))
 
     # Add validated data to request
     request.validated_data = data
 
-    return target(request)
+    response = target(request)
+
+    if isinstance(response, HttpResponse):
+        return response
+    else:
+        return HttpResponse(json.dumps(response))
