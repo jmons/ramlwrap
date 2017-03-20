@@ -11,7 +11,7 @@ from ramlwrap.utils.validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGET
 from ramlwrap.utils.raml import raml_url_patterns
 from ramlwrap.utils.swaggle import swagger_url_patterns
 from ramlwrap.utils.exceptions import FatalException
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from unittest import skip
 
@@ -26,6 +26,11 @@ def _internal_mockfunc(request, example):
 
 
 class RamlWrapTestCase(TestCase):
+
+    client = None;
+
+    def setUp(self):
+        self.client = Client();
 
     def test_ramlwrap_success(self):
 
@@ -97,7 +102,7 @@ class RamlWrapTestCase(TestCase):
             {
                 'url': "app1",
                 'function': ExampleAPI,
-                'default_args': {'example': "{ 'data': 'foo' }"}
+                'default_args': {'example': '{ "data": "foo" }'}
             },
             {
                 'url': "turtle",
@@ -261,16 +266,24 @@ class RamlWrapTestCase(TestCase):
         request = rf.get("/turtle/quote/?name=Michelangelo")
         self.assertEquals(_is_valid_query(request.GET, expected_params), True)
 
-    def test_example(self):
+    def test_raml_schema_validation(self):
         """
-        Testing the do thing function of ExampleAPI
+        Test that the validation is applied when present
         """
 
-        data = '{"splat":"splat"}'
+        with self.assertRaises(ValidationError):
+            response = self.client.post("/app1", data="{}", content_type="application/json"  )
+        
 
-        response = _example_api(None, None, data)
+    def test_raml_example_returned(self):
+        response = self.client.post("/app1", data='{ "data":"foobar"}', content_type="application/json"  )
+    
+        self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(json.loads(data), response)
+        expected_data = { "data" : "foo"}
+        reply_data = response.content.decode('utf-8')
+        
+        self.assertEqual(expected_data, json.loads(reply_data))
 
     def test_empty_post(self):
         """
