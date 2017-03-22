@@ -16,6 +16,14 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from ramlwrap import ramlwrap
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
+
+# empty mapping table
+function_map = {}
+
+# Load in test raml file
+urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test1.raml", function_map))

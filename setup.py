@@ -12,8 +12,8 @@ with open(path.join(here, 'README')) as f:
     long_description = f.read()
 
 #with open(path.join(here, 'pip.list'), encoding='utf-8') as f:
-with open(path.join(here, 'pip.list')) as f:
-    requirements = f.readlines()
+#with open(path.join(here, 'pip.list')) as f:
+#    requirements = f.readlines()
 
 setup(
     name='ramlwrap',
@@ -75,6 +75,12 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=requirements
+    install_requires=[
+        "Django>=1.9.0",
+        "jsonschema",
+        "pyraml-parser",
+        "swagger-parser",
+        "pyyaml"
+    ]
 
 )
