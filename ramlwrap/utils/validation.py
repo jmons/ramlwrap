@@ -104,6 +104,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
 
     response = target(request)
 
+    # if its a http response, return, otherwise try to jsonify it.
     if isinstance(response, HttpResponse):
         return response
     else:
