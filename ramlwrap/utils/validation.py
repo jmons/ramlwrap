@@ -55,7 +55,7 @@ def _is_valid_query(params, expected_params):
     # TODO Add more checks here.
     return True
 
-@csrf_exempt
+
 def ValidatedGETAPI(request, expected_params, target):
     """
     Validate GET APIs.
@@ -69,7 +69,7 @@ def ValidatedGETAPI(request, expected_params, target):
         else:
             return HttpResponse(json.dumps(response))
 
-@csrf_exempt
+
 def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
