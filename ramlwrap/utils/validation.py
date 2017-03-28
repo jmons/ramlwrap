@@ -1,27 +1,43 @@
+import importlib
 import json
 import logging
 
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from django.http.response import HttpResponse
 
 from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
 
-@csrf_exempt
+
 def ExampleAPI(request, schema, example):
 
-    return HttpResponse(_example_api(request, schema, example))
+    response = _example_api(request, schema, example)
+    if isinstance(response, HttpResponse):
+        return response
+    else:
+        return HttpResponse(response)
 
 
 def _example_api(request, schema, example):
 
+    response = None
     if schema:
-        data = json.loads(request.body.decode("utf-8"))
-        validate(data, schema)
+        # If there is a problem with the json data, return a 400.
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            validate(data, schema)
+        except Exception as e:
+            if settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                response = _call_custom_handler(e)
+            else:
+                response = _validation_error_handler(e)
+
+    if response:
+        return response
 
     if not example:
         return None
@@ -74,7 +90,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
     """
-
+    error_response = None
     if expected_params:
         _is_valid_query(request.GET, expected_params)   # Either passes through or raises an exception.
 
@@ -82,30 +98,59 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
         # If there is a problem with the json data, return a 400.
         try:
             data = json.loads(request.body.decode("utf-8"))
+            validate(data, schema) 
         except Exception as e:
-            raise FatalException("Malformed JSON in the request.", 400)
-
-        # Else if there is a problem with the  json schema validation, return a 422 and the reason.
-        try:
-            validate(data, schema)   # this will throw an exception if it doesn't validate.
-        except ValidationError as e:
-            message = "Validation failed. {}".format(e.message)
-            error_response = {
-                "message": message,
-                "code": e.validator
-            }
-            logger.info(message)
-            return HttpResponse(error_response, status=422)
+            if settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                error_response = _call_custom_handler(e)
+            else:
+                error_response = _validation_error_handler(e)
     else:
         data = json.loads(request.body.decode('utf-8'))
 
     # Add validated data to request
     request.validated_data = data
 
-    response = target(request)
+    if error_response:
+        response = error_response
+    else:
+        response = target(request)
 
     # if its a http response, return, otherwise try to jsonify it.
     if isinstance(response, HttpResponse):
         return response
     else:
         return HttpResponse(json.dumps(response))
+
+
+def _validation_error_handler(e):
+    """
+    Handle validation errors.
+    This can be overridden via the settings.
+    """
+
+    if isinstance(e, ValidationError):
+        message = "Validation failed. {}".format(e.message)
+        error_response = {
+            "message": message,
+            "code": e.validator
+        }
+        logger.info(message)
+        error_resp = HttpResponse(error_response, status=422)
+    else:
+        raise FatalException("Malformed JSON in the request.", 400)
+
+    return error_resp
+
+
+def _call_custom_handler(e):
+    """
+    Dynamically import and call the custom handler
+    defined by the user in the django settings file.
+    """
+
+    handler_full_path = settings.RAMLWRAP_VALIDATION_ERROR_HANDLER
+    handler_method = handler_full_path.split(".")[-1]
+    handler_class_path = ".".join(handler_full_path.split(".")[0:-1])
+
+    handler = getattr(importlib.import_module(handler_class_path), handler_method)
+    return handler(e)

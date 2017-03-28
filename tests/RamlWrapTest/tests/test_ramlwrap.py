@@ -11,6 +11,7 @@ from ramlwrap.utils.validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGET
 from ramlwrap.utils.raml import raml_url_patterns
 from ramlwrap.utils.swaggle import swagger_url_patterns
 from ramlwrap.utils.exceptions import FatalException
+from django.conf import settings
 from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from unittest import skip
@@ -276,18 +277,16 @@ class RamlWrapTestCase(TestCase):
         Test that the validation is applied when present
         """
 
-        with self.assertRaises(ValidationError):
-            response = self.client.post("/app1", data="{}", content_type="application/json"  )
-        
+        response = self.client.post("/app1", data="{}", content_type="application/json")
+        self.assertEquals(422, response.status_code)
 
     def test_raml_example_returned(self):
-        response = self.client.post("/app1", data='{ "data":"foobar"}', content_type="application/json"  )
-    
+        response = self.client.post("/app1", data=json.dumps({ "data":"foobar"}), content_type="application/json")
+
         self.assertEqual(response.status_code, 200)
 
-        expected_data = { "data" : "foo"}
+        expected_data = {"data": "foo"}
         reply_data = response.content.decode('utf-8')
-        
         self.assertEqual(expected_data, json.loads(reply_data))
 
     def test_empty_post(self):
@@ -297,4 +296,26 @@ class RamlWrapTestCase(TestCase):
 
         response = _example_api(None, None, None)
         self.assertEqual(response, None)
+
+
+    def test_validation_handler(self):
+        """
+        Test that given a custom validation handler path, it is called.
+        Test that if no handler is given, the default handler is used.
+        """
+
+        # Test that the custom method is called and a response is returned.
+        settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = 'RamlWrapTest.utils.validation_handler.custom_validation_response'
+        response = self.client.post("/app1", data="{}", content_type="application/json")
+        self.assertEquals(418, response.status_code)
+
+        # Test that the custom method is called and an exception is raised.
+        settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = 'RamlWrapTest.utils.validation_handler.custom_validation_exception'
+        with self.assertRaises(NotImplementedError):
+            response = self.client.post("/app1", data="{}", content_type="application/json")
+
+        # Test that the default is called.
+        settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = None
+        response = self.client.post("/app1", data="{}", content_type="application/json")
+        self.assertEquals(422, response.status_code)
 
