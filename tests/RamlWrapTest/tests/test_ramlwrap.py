@@ -1,10 +1,10 @@
-
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
 import json
+import logging
 
 from ramlwrap import ramlwrap
 from ramlwrap.utils.validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGETAPI, _is_valid_query, _example_api
@@ -28,10 +28,15 @@ def _internal_mockfunc(request, example):
 
 class RamlWrapTestCase(TestCase):
 
-    client = None;
+    client = None
+
 
     def setUp(self):
-        self.client = Client();
+        logging.disable(logging.CRITICAL)
+        self.client = Client()
+        
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     def test_ramlwrap_success(self):
 
@@ -292,6 +297,7 @@ class RamlWrapTestCase(TestCase):
         response = _example_api(None, None, None)
         self.assertEqual(response, None)
 
+
     def test_validation_handler(self):
         """
         Test that given a custom validation handler path, it is called.
@@ -312,3 +318,4 @@ class RamlWrapTestCase(TestCase):
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = None
         response = self.client.post("/app1", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)
+

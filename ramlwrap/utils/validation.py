@@ -7,14 +7,12 @@ from jsonschema.exceptions import ValidationError
 
 from django.conf import settings
 from django.http.response import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
 
 
-@csrf_exempt
 def ExampleAPI(request, schema, example):
 
     response = _example_api(request, schema, example)
@@ -74,7 +72,6 @@ def _is_valid_query(params, expected_params):
     return True
 
 
-@csrf_exempt
 def ValidatedGETAPI(request, expected_params, target):
     """
     Validate GET APIs.
@@ -89,7 +86,6 @@ def ValidatedGETAPI(request, expected_params, target):
             return HttpResponse(json.dumps(response))
 
 
-@csrf_exempt
 def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
@@ -119,6 +115,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     else:
         response = target(request)
 
+    # if its a http response, return, otherwise try to jsonify it.
     if isinstance(response, HttpResponse):
         return response
     else:

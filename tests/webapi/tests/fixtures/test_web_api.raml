@@ -1,0 +1,36 @@
+#%RAML 0.8
+---
+title: Web API Tests
+description: These api's allow testing when used as a web-app api (i.e. with session handlers)
+version:  v0.1
+mediaType:  application/json
+baseUri: http://{{serverName}}/
+
+protocols: [HTTP]
+
+baseUriParameters:
+  serverName:
+    description: The name of the server (so as to allow templating)
+
+/web_app_tests:
+    /get:
+        displayName: The Get Request (requires auth)
+        get:
+            description: Get a feature
+            responses:
+                200:
+                    description: A response
+                    body:
+                        application/json:
+                            example: '{ "status": "ok", "logged_in_user":"no_user"}'
+    /post:
+        displayName: The Post Response (requires auth)
+        post:
+            description: Post a feature
+            responses:
+                200:
+                    description: A response
+                    body:
+                        application/json:
+                            example: '{ "status": "ok", "logged_in_user":"no_user"}'        
+
