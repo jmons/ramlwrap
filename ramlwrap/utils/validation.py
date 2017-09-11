@@ -105,7 +105,8 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
             data = json.loads(request.body.decode("utf-8"))
             validate(data, schema) 
         except Exception as e:
-            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER'):
+            # Check the value is in settings, and that it is not None
+            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
                 error_response = _call_custom_handler(e)
             else:
                 error_response = _validation_error_handler(e)
