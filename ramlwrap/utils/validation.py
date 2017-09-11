@@ -33,7 +33,7 @@ def _example_api(request, schema, example):
             data = json.loads(request.body.decode("utf-8"))
             validate(data, schema)
         except Exception as e:
-            if settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
                 response = _call_custom_handler(e)
             else:
                 response = _validation_error_handler(e)
@@ -94,6 +94,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
     """
+
     error_response = None
     if expected_params:
         _is_valid_query(request.GET, expected_params)   # Either passes through or raises an exception.
@@ -104,19 +105,19 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
             data = json.loads(request.body.decode("utf-8"))
             validate(data, schema) 
         except Exception as e:
-            if settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+            # Check the value is in settings, and that it is not None
+            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
                 error_response = _call_custom_handler(e)
+
             else:
                 error_response = _validation_error_handler(e)
     else:
         data = json.loads(request.body.decode('utf-8'))
 
-    # Add validated data to request
-    request.validated_data = data
-
     if error_response:
         response = error_response
     else:
+        request.validated_data = data
         response = target(request)
 
     if isinstance(response, HttpResponse):

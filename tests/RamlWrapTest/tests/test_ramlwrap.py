@@ -28,10 +28,10 @@ def _internal_mockfunc(request, example):
 
 class RamlWrapTestCase(TestCase):
 
-    client = None;
+    client = None
 
     def setUp(self):
-        self.client = Client();
+        self.client = Client()
 
     def test_ramlwrap_success(self):
 
@@ -91,7 +91,7 @@ class RamlWrapTestCase(TestCase):
                 'url': "app2",
                 'function': ValidatedPOSTAPI,
                 'default_args': {
-                    'target': _internal_mockfunc, 
+                    'target': _internal_mockfunc,
                     'schema': {"$schema": "http://json-schema.org/draft-04/schema#", "description": "Schema for a request", "type": "object", "required": ["data"], "properties": {"data": {"description": "Some data that is required", "type": "string"}}}
                 }
             },
@@ -109,7 +109,7 @@ class RamlWrapTestCase(TestCase):
                 'url': "turtle",
                 'function': ValidatedGETAPI,
                 'default_args': {
-                    'target': _internal_mockfunc, 
+                    'target': _internal_mockfunc,
                     'expected_params': {'name': {'repeat': None, 'displayName': 'Name', 'name': None, 'default': None, 'pattern': None, 'enum': None, 'maximum': None, 'required': True, 'minimum': None, 'minLength': None, 'maxLength': None, 'type': 'string', 'example': 'Michelangelo', 'description': None}}}
             },
             {
@@ -310,5 +310,9 @@ class RamlWrapTestCase(TestCase):
 
         # Test that the default is called.
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = None
+        response = self.client.post("/app1", data="{}", content_type="application/json")
+        self.assertEquals(422, response.status_code)
+
+        delattr(settings, "RAMLWRAP_VALIDATION_ERROR_HANDLER")
         response = self.client.post("/app1", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)
