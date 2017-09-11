@@ -94,7 +94,7 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     """
     Validate POST APIs.
     """
-    data = None
+
     error_response = None
     if expected_params:
         _is_valid_query(request.GET, expected_params)   # Either passes through or raises an exception.
@@ -112,13 +112,10 @@ def ValidatedPOSTAPI(request, schema, expected_params, target):
     else:
         data = json.loads(request.body.decode('utf-8'))
 
-    if data:
-        # If exception didn't occur json loading data, add validated data to request
-        request.validated_data = data
-
     if error_response:
         response = error_response
     else:
+        request.validated_data = data
         response = target(request)
 
     if isinstance(response, HttpResponse):
