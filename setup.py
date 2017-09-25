@@ -77,10 +77,10 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "Django>=1.9.0",
-        "jsonschema",
-        "pyraml-parser",
-        "swagger-parser",
-        "pyyaml"
+        "jsonschema==2.6.0",
+        "pyraml-parser==0.1.5",
+        "swagger-parser==0.1.11",
+        "pyyaml==3.12"
     ]
 
 )
