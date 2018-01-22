@@ -76,7 +76,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        "Django>=1.9.0",
+        "Django>=1.9.0,<2.0",
         "jsonschema",
         "pyraml-parser",
         "swagger-parser",

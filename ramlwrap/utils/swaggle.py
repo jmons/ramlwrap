@@ -8,7 +8,7 @@ import logging
 from swagger_parser import SwaggerParser
 from django.conf.urls import url
 
-from . validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGETAPI
+from . validation import WrappedAPI
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +46,11 @@ def _generate_swagger_patterns(resource_map, function_map, tree):
     example_json = tree.definitions_example
 
     for t_url, resource in resource_map.items():
-
         t_url = t_url[1:]   # String leading /
-        example = None
+        wrapped_api = WrappedAPI()
 
         if resource["path"] is not None:
+            example = None
             schema = None
             if "post" in resource:
                 expected_params = None
@@ -72,10 +72,8 @@ def _generate_swagger_patterns(resource_map, function_map, tree):
                                 if definition in example_json:
                                     example = example_json[definition]
 
-                if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedPOSTAPI, {'target': function_map[t_url], 'schema': schema, 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                target = function_map[t_url] if t_url in function_map else None
+                wrapped_api.add_method(method='POST', kwargs={'target': target, 'schema': schema, 'expected_params': expected_params})
 
             if "get" in resource:
                 expected_params = None
@@ -90,11 +88,12 @@ def _generate_swagger_patterns(resource_map, function_map, tree):
                             if definition in example_json:
                                 example = example_json[definition]
 
-                if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedGETAPI, {'target': function_map[t_url], 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                target = function_map[t_url] if t_url in function_map else None
+                wrapped_api.add_method(method='GET', kwargs={'target': target, 'expected_params': expected_params})
+
+            if t_url in function_map:
+                patterns.append(url("^%s$" % t_url, wrapped_api.validate))
+            else:
+                patterns.append(url("^%s$" % t_url, wrapped_api.mock))
 
     return patterns
-
-

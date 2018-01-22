@@ -2,7 +2,7 @@ import logging
 import pyraml.parser
 from django.conf.urls import url
 
-from . validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGETAPI
+from . validation import WrappedAPI
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +31,14 @@ def _generate_patterns(resource_map, function_map):
 
     for t_url, resource in resource_map.items():
         t_url = t_url[1:]   # String leading /
-        example = None
+        wrapped_api = WrappedAPI()
 
         if resource.methods is not None:
-            schema = None
             if "post" in resource.methods:
+                schema = None
+                example = None
                 expected_params = None
+
                 if resource.methods['post'].queryParameters:
                     expected_params = dict(resource.methods['post'].queryParameters)
                 if resource.methods['post'].body:
@@ -51,12 +53,13 @@ def _generate_patterns(resource_map, function_map):
                                 if resource.methods['post'].responses[200].body['application/json'].example:
                                     example = resource.methods['post'].responses[200].body['application/json'].example
 
+                target = None
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedPOSTAPI, {'target': function_map[t_url], 'schema': schema, 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                    target = function_map[t_url]
+                wrapped_api.add_method(method='POST', kwargs={'target': target, 'schema': schema, 'expected_params': expected_params}, example=example)
 
             if "get" in resource.methods:
+                example = None
                 expected_params = None
                 if resource.methods['get'].queryParameters:
                     expected_params = dict(resource.methods['get'].queryParameters)
@@ -67,10 +70,15 @@ def _generate_patterns(resource_map, function_map):
                                 if resource.methods['get'].responses[200].body['application/json'].example:
                                     example = resource.methods['get'].responses[200].body['application/json'].example
 
+                target = None
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedGETAPI, {'target': function_map[t_url], 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                    target = function_map[t_url]
+                wrapped_api.add_method(method='GET', kwargs={'target': target, 'expected_params': expected_params}, example=example)
+
+            if t_url in function_map:
+                patterns.append(url("^%s$" % t_url, wrapped_api.validate))
+            else:
+                patterns.append(url("^%s$" % t_url, wrapped_api.mock))
 
     return patterns
 
