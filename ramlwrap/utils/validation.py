@@ -190,10 +190,10 @@ class WrappedAPI():
 
 
 def _validation_error_handler(e):
-    '''
+    """
     Handle validation errors.
     This can be overridden via the settings.
-    '''
+    """
 
     if isinstance(e, ValidationError):
         message = 'Validation failed. {}'.format(e.message)
@@ -210,10 +210,10 @@ def _validation_error_handler(e):
 
 
 def _call_custom_handler(e):
-    '''
+    """
     Dynamically import and call the custom handler
     defined by the user in the django settings file.
-    '''
+    """
 
     handler_full_path = settings.RAMLWRAP_VALIDATION_ERROR_HANDLER
     handler_method = handler_full_path.split('.')[-1]
