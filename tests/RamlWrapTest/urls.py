@@ -26,4 +26,4 @@ urlpatterns = [
 function_map = {}
 
 # Load in test raml file
-urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test1.raml", function_map))
+urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test.raml", function_map))

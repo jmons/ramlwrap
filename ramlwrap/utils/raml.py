@@ -2,7 +2,7 @@ import logging
 import pyraml.parser
 from django.conf.urls import url
 
-from . validation import WrappedAPI
+from . validation import Endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def _generate_patterns(resource_map, function_map):
 
     for t_url, resource in resource_map.items():
         t_url = t_url[1:]   # String leading /
-        wrapped_api = WrappedAPI()
+        endpoint = Endpoint(t_url)
 
         if resource.methods is not None:
             if "post" in resource.methods:
@@ -56,7 +56,7 @@ def _generate_patterns(resource_map, function_map):
                 target = None
                 if t_url in function_map:
                     target = function_map[t_url]
-                wrapped_api.add_method(method='POST', kwargs={'target': target, 'schema': schema, 'expected_params': expected_params}, example=example)
+                endpoint.add_action('POST', target=target, schema=schema, query_parameter_checks=expected_params, example=example)
 
             if "get" in resource.methods:
                 example = None
@@ -73,12 +73,9 @@ def _generate_patterns(resource_map, function_map):
                 target = None
                 if t_url in function_map:
                     target = function_map[t_url]
-                wrapped_api.add_method(method='GET', kwargs={'target': target, 'expected_params': expected_params}, example=example)
+                endpoint.add_action('GET', target=target, query_parameter_checks=expected_params, example=example)
 
-            if t_url in function_map:
-                patterns.append(url("^%s$" % t_url, wrapped_api.validate))
-            else:
-                patterns.append(url("^%s$" % t_url, wrapped_api.mock))
+            patterns.append(url("^%s$" % t_url, endpoint.serve))
 
     return patterns
 

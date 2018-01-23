@@ -1,0 +1,98 @@
+#%RAML 0.8
+---
+title: Test RamlWrap API
+description: A series of useful APIs that can be used to test RamlWrap functionality.
+version:  v0.1
+mediaType:  application/json
+baseUri: http://example.com
+
+protocols: [HTTP]
+
+/api:
+  displayName: API root
+  post:
+    body:
+      application/json:
+        schema: !include json/service_request.json
+        example: !include json/service_request_example.json
+    responses:
+        200:
+          body:
+            application/json:
+              example: '{"data": "foo"}'
+        500:
+          description: A really unhappy server error.
+  /1:
+    displayName: API 1
+    description: Example API with a post request.
+    post:
+      body:
+        application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+      responses:
+        200:
+          body:
+            application/json:
+    /1.1:
+      displayName: API 1.1
+      get:
+        responses:
+        200:
+          body:
+            application/json:
+      /1.1.1:
+        displayName: API 1.1.1
+        get:
+          responses:
+          200:
+            body:
+              application/json:
+  /2:
+    displayName: API 2
+    description: Example API with get request.
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: '{"exampleData": "You just made a get!"}'
+  /3:
+    displayName: API 3
+    description: Example API with get and post request with query parameters.
+    get:
+      queryParameters:
+        param1:
+          type: string
+          required: false
+        param2:
+          type: string
+          minLength: 5
+          maxLength: 10
+          required: true
+        param3:
+          type: number
+          required: false
+      responses:
+        200:
+          body:
+            application/json:
+              example: '{"exampleData": "You just made a get!"}'
+    post:
+      queryParameters:
+        param1:
+          type: string
+          required: false
+        param2:
+          type: string
+          minLength: 5
+          maxLength: 10
+          required: true
+        param3:
+          type: number
+          required: false
+      responses:
+        200:
+          body:
+            application/json:
+              example: '{"exampleData": "You just made a post!"}'

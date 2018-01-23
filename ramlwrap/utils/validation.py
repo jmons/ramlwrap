@@ -1,3 +1,4 @@
+"""Validation functionality."""
 import importlib
 import json
 import logging
@@ -13,15 +14,101 @@ from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
 
-def _is_valid_query(params, expected_params):
-    """Function to validate get request params."""
+
+class Endpoint():
+    """
+    Endpoint that represents one url in the service. Each endpoint
+    contains Actions which represent a request method that the endpoint
+    supports.
+    """
+
+    url = None
+    request_method_mapping = None
+
+    def __init__(self, url):
+        """Initialisation function."""
+        self.url = url
+        self.request_method_mapping = {}
+
+    def add_action(self, request_method, example=None, schema=None, target=None, query_parameter_checks=None):
+        """Add an action mapping for the given request method type.
+        :param request_method: http method type to map the action to.
+        :param example: example to return if the endpoint is mocked.
+        :param schema: schema to validate the incoming request against.
+        :param target: target function that is returned to django to process the request.
+        :param query_parameter_checks: rules to validate the query params against.
+        :returns: returns nothing.
+        """
+        action = Action(example, schema, target, query_parameter_checks)
+        self.request_method_mapping[request_method] = action
+
+    @csrf_exempt
+    def serve(self, request):
+        """Serve the request to the current endpoint. The validation and response
+        that is returned depends on the incoming request http method type.
+        :param request: incoming http request that must be served correctly.
+        :returns: returns the HttpResponse, content of which is created by the target function.
+        """
+
+        if request.method == "GET":
+            response = _validate_get_api(request, self.request_method_mapping["GET"])
+        elif request.method == "POST":
+            response = _validate_post_api(request, self.request_method_mapping["POST"])
+        else:
+            response = 404   # TODO THis is wrong... MethodNotAllowed??
+
+        if isinstance(response, HttpResponse):
+            return response
+        else:
+            return HttpResponse(response)
+
+
+class Action():
+    """
+    Maps out the api definition associated with the parent Endpoint.
+    One of these will be created per http request method type.
+    """
+
+    example = None
+    schema = None
+    target = None
+    expected_query_params = None
+
+    def __init__(self, example, schema, target, query_parameter_checks):
+        """
+        Initialisation function that creates the Action to store the given params.
+        :param example: example to be returned when mocking the function.
+            This comes straight in from the raml parsing.
+        :param schema: schema to validate the incoming request against.
+        :param target: function that will process the incoming request.
+        :param query_parameter_checks: rules that are used to validate the
+            request's query parameters against.
+        :returns: returns nothing.
+        """
+        self.example = example
+        self.schema = schema
+        self.target = target
+        self.query_parameter_checks = query_parameter_checks
+
+
+def _validate_query_params(params, checks):
+    """
+    Function to validate get request params. If there are checks to be
+    performed then they will be; these will be items such as length and type
+    checks defined in the definition file.
+    :param params: incoming request parameters.
+    :param checks: dict of param to rule to validate with.
+    :raises ValidationError: raised when any query parameter fails any
+        of its checks defined in the checks param.
+    :returns: true if validated, otherwise raises an exception when fails.
+    """
 
     # If expected params, check them. If not, pass.
-    if expected_params:
-        for param in expected_params:
+    if checks:
+        for param in checks:
             # If the expected param is in the query.
             if param in params:
-                for check, rule in expected_params[param].__dict__.items():
+                for check, rule in checks[param].__dict__.items():
                     if rule is not None:
                         error_message = 'QueryParam [%s] failed validation check [%s]:[%s]' % (param, check, rule)
                         if check == 'minLength':
@@ -31,36 +118,56 @@ def _is_valid_query(params, expected_params):
                             if len(params.get(param)) > rule:
                                 raise ValidationError(error_message)
             # Isn't in the query but it is required, throw a validation exception.
-            elif expected_params[param].required is True:
+            elif checks[param].required is True:
                 raise ValidationError('QueryParam [%s] failed validation check [Required]:[True]' % param)
 
     # TODO Add more checks here.
     return True
 
 
-def _validate_get_api(request, expected_params, target):
-    """Validate GET APIs."""
+def _validate_get_api(request, action):
+    """
+    Validate Get APIs.
+    :param request: incoming http request.
+    :param action: action object containing data used to validate
+        and serve the get request.
+    :returns: returns the HttpResponse generated by the action target.
+    """
 
-    if _is_valid_query(request.GET, expected_params):
-        response = target(request)
+    if action.query_parameter_checks:
+        # Following raises exception on fail or passes through.
+        _validate_query_params(request.GET, action.query_parameter_checks)
 
-        if isinstance(response, HttpResponse):
-            return response
-        else:
-            return HttpResponse(json.dumps(response))
+    if action.target:
+        response = action.target(request)
+    else:
+        response = action.example
 
-def _validate_post_api(request, schema, expected_params, target):
-    """Validate POST APIs."""
+    if isinstance(response, HttpResponse):
+        return response
+    else:
+        return HttpResponse(json.dumps(response))
+
+
+def _validate_post_api(request, action):
+    """
+    Validate POST APIs.
+    :param request: incoming http request.
+    :param action: action object containing data used to validate
+        and serve the get request.
+    :returns: returns the HttpResponse generated by the action target.
+    """
 
     error_response = None
-    if expected_params:
-        _is_valid_query(request.GET, expected_params)   # Either passes through or raises an exception.
+    if action.query_parameter_checks:
+        # Following raises exception on fail or passes through.
+        _validate_query_params(request.GET, action.query_parameter_checks)
 
-    if schema:
+    if action.schema:
         # If there is a problem with the json data, return a 400.
         try:
             data = json.loads(request.body.decode('utf-8'))
-            validate(data, schema) 
+            validate(data, action.schema)
         except Exception as e:
             # Check the value is in settings, and that it is not None
             if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
@@ -74,126 +181,26 @@ def _validate_post_api(request, schema, expected_params, target):
         response = error_response
     else:
         request.validated_data = data
-        response = target(request)
+        if action.target:
+            response = action.target(request)
+        else:
+            response = action.example
 
     if isinstance(response, HttpResponse):
         return response
     else:
         return HttpResponse(json.dumps(response))
 
-def _example_api(request, example, schema=None):
-    """Example API that returns the example from schema."""
-
-    response = None
-    if schema:
-        # If there is a problem with the json data, return a 400.
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            validate(data, schema)
-        except Exception as e:
-            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
-                response = _call_custom_handler(e)
-            else:
-                response = _validation_error_handler(e)
-
-    if response:
-        return response
-
-    if not example:
-        return None
-    else:
-        return example
-
-
-class WrappedAPI():
-    """
-    Standardised Validated API which wraps all method type specific functions.
-    Depending on the type of API the request is passed through
-    to the correct functionality.
-    """
-
-    def __init__(self):
-        """Initialisation function."""
-        self.accepted_methods = []
-        self.get_mapping = {}
-        self.post_mapping = {}
-
-    def add_method(self, method, kwargs, example=None):
-        """
-        Adds a new method to the current wrapped api. This means that
-        the given method will now be supported by this api. For the given
-        method the expected kwargs and their values are stored so that when
-        the api is called by the dependent, the arguments can be pased in.
-        :method: the http method to add to the wrapped api.
-        :kwargs: the arguments that will be passed in to the request. These
-            keys and values will be varying dependent upon the method.
-        :example: the example data, if any.
-        """
-        if method == 'GET':
-            self.accepted_methods.append('GET')
-            self.get_mapping['kwargs'] = kwargs
-            self.get_mapping['example'] = example
-        elif method == 'POST':
-            self.accepted_methods.append('POST')
-            self.post_mapping['kwargs'] = kwargs
-            self.post_mapping['example'] = example
-        else:
-            pass
-
-    @csrf_exempt
-    def validate(self, *args, **kwargs):
-        """Wrapper validation api function."""
-
-        request = args[0]
-
-        if request.method not in self.accepted_methods:
-            raise NotImplementedError
-
-        if request.method == 'POST':
-            response = _validate_post_api(request, **self.post_mapping['kwargs'])
-        elif request.method == 'GET':
-            response = _validate_get_api(request, **self.get_mapping['kwargs'])
-        else:
-            raise NotImplementedError
-
-        if isinstance(response, HttpResponse):
-            return response
-        else:
-            return HttpResponse(response)
-
-    @csrf_exempt
-    def mock(self, *args, **kwargs):
-        """Mock API that is returned if there is no real implementation."""
-        request = args[0]
-
-        if request.method not in self.accepted_methods:
-            raise NotImplementedError
-
-        if request.method == 'POST':
-            response = _example_api(
-                request=request,
-                schema=self.post_mapping['kwargs']['schema'],
-                example=self.post_mapping['example']
-            )
-        elif request.method == 'GET':
-            response = _example_api(
-                request=request,
-                example=self.get_mapping['example']
-            )
-        else:
-            raise NotImplementedError
-
-        if isinstance(response, HttpResponse):
-            return response
-        else:
-            return HttpResponse(response)
-
 
 def _validation_error_handler(e):
-    '''
-    Handle validation errors.
-    This can be overridden via the settings.
-    '''
+    """
+    Default validation handler for when a ValidationError occurs.
+    This behaviour can be overriden in the settings file.
+    :param e: exception raised that must be handled.
+    :returns: HttpResponse with status depending on the error.
+        ValidationError will return a 422 with json info on the cause.
+        Otherwise a FatalException is raised.
+    """
 
     if isinstance(e, ValidationError):
         message = 'Validation failed. {}'.format(e.message)
@@ -210,10 +217,12 @@ def _validation_error_handler(e):
 
 
 def _call_custom_handler(e):
-    '''
-    Dynamically import and call the custom handler
+    """
+    Dynamically import and call the custom validation error handler
     defined by the user in the django settings file.
-    '''
+    :param e: exception raised that must be handled.
+    :returns: response returned from the custom handler, given the exception.
+    """
 
     handler_full_path = settings.RAMLWRAP_VALIDATION_ERROR_HANDLER
     handler_method = handler_full_path.split('.')[-1]
