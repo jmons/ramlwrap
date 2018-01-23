@@ -163,12 +163,12 @@ class RamlWrapTestCase(TestCase):
     def test_raml_schema_validation(self):
         """Test that the validation is applied when present"""
 
-        response = self.client.post("/app1", data="{}", content_type="application/json")
+        response = self.client.post("/api", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)
 
     def test_raml_example_returned(self):
         """Test that the example is returned as expected."""
-        response = self.client.post("/app1", data=json.dumps({ "data": "foobar"}), content_type="application/json")
+        response = self.client.post("/api", data=json.dumps({"data": "foobar"}), content_type="application/json")
 
         self.assertEqual(response.status_code, 200)
 

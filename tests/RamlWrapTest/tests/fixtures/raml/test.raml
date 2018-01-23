@@ -19,7 +19,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: '{"data": "foo"}'
+              example: !include json/service_response.json
         500:
           description: A really unhappy server error.
   /1:

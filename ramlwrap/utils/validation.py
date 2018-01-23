@@ -141,7 +141,7 @@ def _validate_get_api(request, action):
     if action.target:
         response = action.target(request)
     else:
-        response = action.example
+        response = HttpResponse(action.example)
 
     if isinstance(response, HttpResponse):
         return response
@@ -184,7 +184,7 @@ def _validate_post_api(request, action):
         if action.target:
             response = action.target(request)
         else:
-            response = action.example
+            response = HttpResponse(action.example)
 
     if isinstance(response, HttpResponse):
         return response
