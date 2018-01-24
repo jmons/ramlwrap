@@ -96,3 +96,10 @@ protocols: [HTTP]
           body:
             application/json:
               example: '{"exampleData": "You just made a post!"}'
+  /4:
+    displayName: API 4
+    description: Example API with empty post body.
+    post:
+      responses:
+        200:
+          description: Looks good.

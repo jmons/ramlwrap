@@ -52,7 +52,8 @@ class RamlWrapTestCase(TestCase):
             "api/1/1.1",
             "api/1/1.1/1.1.1",
             "api/2",
-            "api/3"
+            "api/3",
+            "api/4"
         ]
 
         for expected_url in expected_urls:
@@ -69,12 +70,13 @@ class RamlWrapTestCase(TestCase):
         funcmap = {}
         patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.raml", funcmap)
         expected_methods = {
-            "api": {"POST": {"example": '{"data": "foo"}'}},
+            "api": {"POST": {"example": '{"data": "value"}'}},
             "api/1": {"POST": {}},
             "api/1/1.1": {"GET": {}},
             "api/1/1.1/1.1.1": {"GET": {}},
             "api/2": {"GET": {}},
-            "api/3": {"GET": {}}
+            "api/3": {"GET": {}},
+            "api/4": {"POST": {}}
         }
 
         for pattern in patterns:
@@ -172,14 +174,14 @@ class RamlWrapTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        expected_data = {"data": "foo"}
+        expected_data = {"data": "value"}
         reply_data = response.content.decode("utf-8")
         self.assertEqual(expected_data, json.loads(reply_data))
 
     def test_empty_post(self):
         """Testing that ramlwrap can handle an empty post request."""
 
-        response = self.client.post("/app2/foo", data=None)
+        response = self.client.post("/api/4", data=None)
         self.assertEqual(response.status_code, 200)
 
     def test_validation_handler(self):
@@ -190,19 +192,19 @@ class RamlWrapTestCase(TestCase):
 
         # Test that the custom method is called and a response is returned.
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = "RamlWrapTest.utils.validation_handler.custom_validation_response"
-        response = self.client.post("/app1", data="{}", content_type="application/json")
+        response = self.client.post("/api", data="{}", content_type="application/json")
         self.assertEquals(418, response.status_code)
 
         # Test that the custom method is called and an exception is raised.
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = "RamlWrapTest.utils.validation_handler.custom_validation_exception"
         with self.assertRaises(NotImplementedError):
-            response = self.client.post("/app1", data="{}", content_type="application/json")
+            response = self.client.post("/api", data="{}", content_type="application/json")
 
         # Test that the default is called.
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = None
-        response = self.client.post("/app1", data="{}", content_type="application/json")
+        response = self.client.post("/api", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)
 
         delattr(settings, "RAMLWRAP_VALIDATION_ERROR_HANDLER")
-        response = self.client.post("/app1", data="{}", content_type="application/json")
+        response = self.client.post("/api", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)

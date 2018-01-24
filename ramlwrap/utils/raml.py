@@ -53,6 +53,9 @@ def _generate_patterns(resource_map, function_map):
                                 if resource.methods['post'].responses[200].body['application/json'].example:
                                     example = resource.methods['post'].responses[200].body['application/json'].example
 
+            # TODO : Parse content/type application/json and store this (for both request, response) in the Action.
+            #        Then use this to determine how we handle the requests and responses (if to json load etc)
+
                 target = None
                 if t_url in function_map:
                     target = function_map[t_url]
