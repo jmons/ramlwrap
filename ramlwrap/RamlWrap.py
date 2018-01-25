@@ -39,7 +39,7 @@ def ramlwrap(file_path, function_map):
         if file_path.endswith(".raml"):
             patterns = raml_url_patterns(file_path, function_map)
         else:
-            error_msg = "The file: '{}' is neither RAML!".format(file_path)
+            error_msg = "The file: '{}' does not have a .raml extension!".format(file_path)
             logger.error(error_msg)
             raise FatalException(error_msg)
 

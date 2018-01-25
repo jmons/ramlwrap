@@ -1,0 +1,1 @@
+This file exists to make sure than if we try to load it the correct exception is raised.

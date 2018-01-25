@@ -96,7 +96,7 @@ def _validate_query_params(params, checks):
     :returns: true if validated, otherwise raises an exception when fails.
     """
 
-    # If expected params, check them. If not, pass.
+    # If validation checks, check the params. If not, pass.
     if checks:
         for param in checks:
             # If the expected param is in the query.
@@ -110,11 +110,17 @@ def _validate_query_params(params, checks):
                         elif check == 'maxLength':
                             if len(params.get(param)) > rule:
                                 raise ValidationError(error_message)
-            # Isn't in the query but it is required, throw a validation exception.
+                        elif check == 'type':
+                            if rule == 'number':
+                                try:
+                                    float(params.get(param))
+                                except ValueError:
+                                    raise ValidationError(error_message)
+
+            # If the require param isn't in the query.
             elif checks[param].required is True:
                 raise ValidationError('QueryParam [%s] failed validation check [Required]:[True]' % param)
 
-    # TODO Add more checks here.
     return True
 
 
@@ -136,10 +142,13 @@ def _validate_get_api(request, action):
     else:
         response = HttpResponse(action.example)
 
-    if isinstance(response, HttpResponse):
-        return response
-    else:
-        return HttpResponse(json.dumps(response))
+    if not isinstance(response, HttpResponse):
+        # As we weren't given a HttpResponse, we need to create one
+        # and handle the data correctly.
+        if action.resp_content_type == ContentType.JSON:
+            response = HttpResponse(json.dumps(response))
+
+    return response
 
 
 def _validate_post_api(request, action):
