@@ -78,8 +78,9 @@ setup(
     install_requires=[
         "Django>=1.9.0,<2.0",
         "jsonschema",
-        "pyraml-parser",
-        "pyyaml"
+        "pyraml-parser==0.1.5",
+        "pyyaml",
+        "enum34==1.1.6"   # This is for python2.7 support
     ]
 
 )
