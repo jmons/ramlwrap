@@ -3,6 +3,8 @@ import importlib
 import json
 import logging
 
+from enum import Enum
+
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -13,6 +15,11 @@ from django.views.decorators.csrf import csrf_exempt
 from . exceptions import FatalException
 
 logger = logging.getLogger(__name__)
+
+
+class ContentType(Enum):
+    """Enum representing http content types."""
+    JSON = 'application/json'
 
 
 class Endpoint():
@@ -30,17 +37,12 @@ class Endpoint():
         self.url = url
         self.request_method_mapping = {}
 
-    def add_action(self, request_method, example=None, schema=None, target=None, query_parameter_checks=None, content_type=None):
+    def add_action(self, request_method, action):
         """Add an action mapping for the given request method type.
         :param request_method: http method type to map the action to.
-        :param example: example to return if the endpoint is mocked.
-        :param schema: schema to validate the incoming request against.
-        :param target: target function that is returned to django to process the request.
-        :param query_parameter_checks: rules to validate the query params against.
-        :param content_type: the content_type to be expected in the request.
+        :param action: the action to map to the request.
         :returns: returns nothing.
         """
-        action = Action(example, schema, target, query_parameter_checks, content_type)
         self.request_method_mapping[request_method] = action
 
     @csrf_exempt
@@ -73,26 +75,13 @@ class Action():
     example = None
     schema = None
     target = None
-    expected_query_params = None
-    content_type = None
+    query_parameter_checks = None
+    resp_content_type = None
+    requ_content_type = None
 
-    def __init__(self, example, schema, target, query_parameter_checks, content_type):
-        """
-        Initialisation function that creates the Action to store the given params.
-        :param example: example to be returned when mocking the function.
-            This comes straight in from the raml parsing.
-        :param schema: schema to validate the incoming request against.
-        :param target: function that will process the incoming request.
-        :param query_parameter_checks: rules that are used to validate the
-            request's query parameters against.
-        :param content_type: the content type of the incoming request.
-        :returns: returns nothing.
-        """
-        self.example = example
-        self.schema = schema
-        self.target = target
-        self.query_parameter_checks = query_parameter_checks
-        self.content_type = content_type
+    def __init__(self):
+        """Initialisation funciton."""
+        pass
 
 
 def _validate_query_params(params, checks):
@@ -167,20 +156,25 @@ def _validate_post_api(request, action):
         # Following raises exception on fail or passes through.
         _validate_query_params(request.GET, action.query_parameter_checks)
 
-    if action.content_type == "application/json"
-    if action.schema:
-        # If there is a problem with the json data, return a 400.
-        try:
+    if action.requ_content_type == ContentType.JSON:
+        # If the expected request body is JSON, we need to load it.
+        if action.schema:
+            # If there is any schema, we'll validate it.
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+                validate(data, action.schema)
+            except Exception as e:
+                # Check the value is in settings, and that it is not None
+                if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                    error_response = _call_custom_handler(e)
+                else:
+                    error_response = _validation_error_handler(e)
+        else:
+            # Otherwise just load it (no validation as no schema).
             data = json.loads(request.body.decode('utf-8'))
-            validate(data, action.schema)
-        except Exception as e:
-            # Check the value is in settings, and that it is not None
-            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
-                error_response = _call_custom_handler(e)
-            else:
-                error_response = _validation_error_handler(e)
     else:
-        data = json.loads(request.body.decode('utf-8'))
+        # The content isn't JSON to just decode it as is.
+        data = request.body.decode('utf-8')
 
     if error_response:
         response = error_response
@@ -191,10 +185,13 @@ def _validate_post_api(request, action):
         else:
             response = HttpResponse(action.example)
 
-    if isinstance(response, HttpResponse):
-        return response
-    else:
-        return HttpResponse(json.dumps(response))
+    if not isinstance(response, HttpResponse):
+        # As we weren't given a HttpResponse, we need to create one
+        # and handle the data correctly.
+        if action.resp_content_type == ContentType.JSON:
+            response = HttpResponse(json.dumps(response))
+
+    return response
 
 
 def _validation_error_handler(e):

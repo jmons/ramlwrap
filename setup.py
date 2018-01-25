@@ -79,7 +79,6 @@ setup(
         "Django>=1.9.0,<2.0",
         "jsonschema",
         "pyraml-parser",
-        "swagger-parser",
         "pyyaml"
     ]
 
