@@ -44,13 +44,13 @@ class RamlWrapTestCase(TestCase):
     def test_file_formats(self):
         """Test that if the file extension isn't raml then an exception is raised."""
         error_message = "The file: 'RamlWrapTest/tests/fixtures/raml/test.txt' does not have a .raml extension!"
-        with self.assertRaisesRegex(FatalException, error_message):
+        with self.assertRaisesMessage(FatalException, error_message):
             ramlwrap("RamlWrapTest/tests/fixtures/raml/test.txt", {})
 
     def test_error_parsing_file(self):
         """Test that a thing happens."""
         error_message = "An error occurred reading 'RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml': 'str' object has no attribute 'get'"
-        with self.assertRaisesRegex(FatalException, error_message):
+        with self.assertRaisesMessage(FatalException, error_message):
             ramlwrap("RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml", {})
 
     def test_pattern_urls_from_raml(self):
