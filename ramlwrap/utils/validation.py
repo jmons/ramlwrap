@@ -51,11 +51,14 @@ class Endpoint():
         :returns: returns the HttpResponse, content of which is created by the target function.
         """
 
-        if request.method == "GET":
-            response = _validate_get_api(request, self.request_method_mapping["GET"])
-        elif request.method == "POST":
-            response = _validate_post_api(request, self.request_method_mapping["POST"])
-        else:
+        try:
+            if request.method == "GET":
+                response = _validate_get_api(request, self.request_method_mapping["GET"])
+            elif request.method == "POST":
+                response = _validate_post_api(request, self.request_method_mapping["POST"])
+            else:
+                response = HttpResponse(status=401)
+        except KeyError:
             response = HttpResponse(status=401)
 
         if isinstance(response, HttpResponse):

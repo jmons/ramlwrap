@@ -176,8 +176,8 @@ class ValidationTestCase(TestCase):
         self.assertTrue(resp.__class__ is HttpResponse)
         self.assertEqual(resp.content.decode("utf-8"), json.dumps({"valid": True}))
 
-    def test_unknown_method_not_allowed(self):
-        """Test that when a request is made for an unknown or
+    def test_unsupported_method_returns_not_allowed(self):
+        """Test that when a request is made for an
         unsupported method, a 401 is returned.
         """
         endpoint = Endpoint("/api/3")
@@ -187,6 +187,23 @@ class ValidationTestCase(TestCase):
         }
 
         request = RequestFactory().put(
+            "/api/3",
+            data=json.dumps({"testkey": "testvalue"}),
+            content_type="application/json")
+
+        endpoint.serve(request)
+
+    def test_unknown_method_returns_not_allowed(self):
+        """Test that when a request is made for an unknown
+        method, a 401 is returend.
+        """
+
+        endpoint = Endpoint("/api/3")
+        endpoint.request_method_mapping = {
+            "GET": {},
+        }
+
+        request = RequestFactory().post(
             "/api/3",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")
