@@ -3,8 +3,6 @@ import importlib
 import json
 import logging
 
-from enum import Enum
-
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -17,8 +15,8 @@ from . exceptions import FatalException
 logger = logging.getLogger(__name__)
 
 
-class ContentType(Enum):
-    """Enum representing http content types."""
+class ContentType:
+    """Represents http content types."""
     JSON = 'application/json'
 
 
@@ -58,7 +56,7 @@ class Endpoint():
         elif request.method == "POST":
             response = _validate_post_api(request, self.request_method_mapping["POST"])
         else:
-            response = 404   # TODO THis is wrong... MethodNotAllowed??
+            response = HttpResponse(status=401)
 
         if isinstance(response, HttpResponse):
             return response

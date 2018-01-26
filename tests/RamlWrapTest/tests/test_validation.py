@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from ramlwrap import ramlwrap
 from ramlwrap.utils.exceptions import FatalException
-from ramlwrap.utils.validation import _validate_get_api, _validate_post_api, _validate_query_params, Action, ContentType
+from ramlwrap.utils.validation import _validate_get_api, _validate_post_api, _validate_query_params, Action, ContentType, Endpoint
 
 from django.conf import settings
 from django.http.response import HttpResponse
@@ -175,3 +175,20 @@ class ValidationTestCase(TestCase):
         resp = _validate_post_api(request, action)
         self.assertTrue(resp.__class__ is HttpResponse)
         self.assertEqual(resp.content.decode("utf-8"), json.dumps({"valid": True}))
+
+    def test_unknown_method_not_allowed(self):
+        """Test that when a request is made for an unknown or
+        unsupported method, a 401 is returned.
+        """
+        endpoint = Endpoint("/api/3")
+        endpoint.request_method_mapping = {
+            "GET": {},
+            "POST": {}
+        }
+
+        request = RequestFactory().put(
+            "/api/3",
+            data=json.dumps({"testkey": "testvalue"}),
+            content_type="application/json")
+
+        endpoint.serve(request)

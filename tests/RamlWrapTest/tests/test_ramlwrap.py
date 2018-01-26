@@ -125,4 +125,3 @@ class RamlWrapTestCase(TestCase):
 
         response = self.client.post("/api/4", data=None)
         self.assertEqual(response.status_code, 200)
-
