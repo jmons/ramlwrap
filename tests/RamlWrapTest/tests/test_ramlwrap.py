@@ -81,7 +81,7 @@ class RamlWrapTestCase(TestCase):
         funcmap = {}
         patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.raml", funcmap)
         expected_methods = {
-            "api": {"POST": {"example": '{"data": "value"}'}},
+            "api": {"POST": {"example": {"data": "value"}}},
             "api/1": {"POST": {}},
             "api/1/1.1": {"GET": {}},
             "api/1/1.1/1.1.1": {"GET": {}},
@@ -98,7 +98,8 @@ class RamlWrapTestCase(TestCase):
                 method_info = expected_methods[pattern_url][method]
                 if "example" in method_info:
                     expected_example = method_info["example"]
-                    self.assertEqual(expected_example, entrypoint.request_method_mapping[method].example)
+                    
+                    self.assertDictEqual(expected_example, entrypoint.request_method_mapping[method].example)
 
     def test_raml_post_example_returned(self):
         """Test that the example is returned as expected."""
