@@ -110,10 +110,10 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                                         if "schema" in two_hundred['body'][a.resp_content_type]:
                                             a.schema = two_hundred['body'][a.resp_content_type]['schema']
                                     
-                                elif resp_attr == "queryParameters":
-                                    # FIXME: does this help in the query parameterising?
-                                    # For filling out a.queryparameterchecks
-                                    a.query_parameter_checks= two_hundred['queryParameters']
+                if "queryParameters" in act and act["queryParameters"] != None:
+                    # FIXME: does this help in the query parameterising?
+                    # For filling out a.queryparameterchecks
+                    a.query_parameter_checks = act['queryParameters']
 
                 if k == "get":
                     localEndpoint.add_action("GET", a)
