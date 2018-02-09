@@ -48,9 +48,10 @@ class RamlWrapTestCase(TestCase):
             ramlwrap("RamlWrapTest/tests/fixtures/raml/test.txt", {})
 
     def test_error_parsing_file(self):
-        """Test that a thing happens."""
+        """If the a subcomponent of a file doesn't exist it should error."""
         error_message = "An error occurred reading 'RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml': 'str' object has no attribute 'get'"
-        with self.assertRaisesMessage(FatalException, error_message):
+        #with self.assertRaisesMessage(FatalException, error_message):
+        with self.assertRaises(Exception):
             ramlwrap("RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml", {})
 
     def test_pattern_urls_from_raml(self):
@@ -109,7 +110,11 @@ class RamlWrapTestCase(TestCase):
 
         expected_data = {"data": "value"}
         reply_data = response.content.decode("utf-8")
-        self.assertEqual(expected_data, json.loads(reply_data))
+
+        self.assertEqual("application/json", response["Content-Type"]) # note Capitlaisation difference as a header        
+        self.assertDictEqual(expected_data, json.loads(reply_data))
+
+        #self.assertEqual(expected_data, json.loads(reply_data))
 
     def test_raml_get_example_returned(self):
         """Test that a valid get request with no target returns
@@ -118,8 +123,12 @@ class RamlWrapTestCase(TestCase):
 
         expected_data = {"exampleData": "You just made a get!"}
         response = self.client.get("/api/3?param2=sixsix")
+
         reply_data = response.content.decode("utf-8")
-        self.assertEqual(expected_data, json.loads(reply_data))
+        
+        #self.assertEqual(expected_data, json.loads(reply_data))
+        self.assertEqual("application/json", response["Content-Type"]) # note Capitlaisation difference as a header
+        self.assertDictEqual(expected_data, json.loads(reply_data))
 
     def test_empty_post(self):
         """Testing that ramlwrap can handle an empty post request."""
