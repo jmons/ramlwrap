@@ -125,6 +125,22 @@ def _validate_query_params(params, checks):
     return True
 
 
+def _generate_example(request, action):
+    """
+    This is used by both GET and POST when returning an example 
+    """
+    # The original method of generating straight from the xample is bad 
+    # because v2 parser now has an object, which also allows us to do the 
+    # headers correctly
+    
+    ret_data = action.example
+    # FIXME: not sure about this content thing
+    if action.resp_content_type == "application/json":
+        ret_data = json.dumps(action.example)
+
+    return HttpResponse(ret_data, content_type=action.resp_content_type)
+
+
 def _validate_get_api(request, action):
     """
     Validate Get APIs.
@@ -141,7 +157,7 @@ def _validate_get_api(request, action):
     if action.target:
         response = action.target(request)
     else:
-        response = HttpResponse(action.example)
+        response = _generate_example(request, action)
 
     if not isinstance(response, HttpResponse):
         # As we weren't given a HttpResponse, we need to create one
@@ -193,7 +209,7 @@ def _validate_post_api(request, action):
         if action.target:
             response = action.target(request)
         else:
-            response = HttpResponse(action.example)
+            response = _generate_example(request, action)
 
     if not isinstance(response, HttpResponse):
         # As we weren't given a HttpResponse, we need to create one
