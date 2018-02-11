@@ -1,9 +1,10 @@
 import logging
 import yaml
-from yaml_include_loader import Loader
+
 from django.conf.urls import url
 
-from . validation import Endpoint, Action
+from .yaml_include_loader import Loader
+from .validation import Endpoint, Action
 
 logger = logging.getLogger(__name__)
 
