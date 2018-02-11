@@ -44,6 +44,8 @@ class FatalException(Exception):
     """
     Custom CBP Exception, allows custom status_code definition.
     """
+    
+    default_code = 500
 
     status_code = None  # Will default to 400 in constructor
     message = ""  # Error message is set in constructor
