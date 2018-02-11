@@ -87,8 +87,12 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     a.target = function_map[path] 
                 
                 if 'body' in act:
-                    # if body, look for content tpye.
+                    # if body, look for content type : if not there maybe not valid raml?
+                    # FIXME: this may be a bug requring a try/catch - need more real world example ramls
                     a.requ_content_type = next(iter(act['body']))
+                    # Also look for a schema here
+                    if "schema" in act['body'][a.requ_content_type]:
+                        a.schema = act['body'][a.requ_content_type]['schema']
 
                 # This horreendous if blocks are to get around none type erros when the tree
                 # is not fully built out.
@@ -107,9 +111,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                                         if "example" in two_hundred['body'][a.resp_content_type]:
                                             a.example = two_hundred['body'][a.resp_content_type]['example']
  
-                                        if "schema" in two_hundred['body'][a.resp_content_type]:
-                                            a.schema = two_hundred['body'][a.resp_content_type]['schema']
-                                    
+                                        
                 if "queryParameters" in act and act["queryParameters"] != None:
                     # FIXME: does this help in the query parameterising?
                     # For filling out a.queryparameterchecks
