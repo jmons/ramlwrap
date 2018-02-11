@@ -1,3 +1,4 @@
+"""Validation functionality."""
 import importlib
 import json
 import logging
@@ -14,147 +15,230 @@ from . exceptions import FatalException
 logger = logging.getLogger(__name__)
 
 
-@csrf_exempt
-def ExampleAPI(request, schema, example):
-
-    response = _example_api(request, schema, example)
-    if isinstance(response, HttpResponse):
-        return response
-    else:
-        return HttpResponse(response)
+class ContentType:
+    """Represents http content types."""
+    JSON = 'application/json'
 
 
-def _example_api(request, schema, example):
+class Endpoint():
+    """
+    Endpoint that represents one url in the service. Each endpoint
+    contains Actions which represent a request method that the endpoint
+    supports.
+    """
 
-    response = None
-    if schema:
-        # If there is a problem with the json data, return a 400.
+    url = None
+    request_method_mapping = None
+
+    def __init__(self, url):
+        """Initialisation function."""
+        self.url = url
+        self.request_method_mapping = {}
+
+    def add_action(self, request_method, action):
+        """Add an action mapping for the given request method type.
+        :param request_method: http method type to map the action to.
+        :param action: the action to map to the request.
+        :returns: returns nothing.
+        """
+        self.request_method_mapping[request_method] = action
+
+    @csrf_exempt
+    def serve(self, request):
+        """Serve the request to the current endpoint. The validation and response
+        that is returned depends on the incoming request http method type.
+        :param request: incoming http request that must be served correctly.
+        :returns: returns the HttpResponse, content of which is created by the target function.
+        """
+
         try:
-            data = json.loads(request.body.decode("utf-8"))
-            validate(data, schema)
-        except Exception as e:
-            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
-                response = _call_custom_handler(e)
+            if request.method == "GET":
+                response = _validate_get_api(request, self.request_method_mapping["GET"])
+            elif request.method == "POST":
+                response = _validate_post_api(request, self.request_method_mapping["POST"])
             else:
-                response = _validation_error_handler(e)
-
-    if response:
-        return response
-
-    if not example:
-        return None
-    else:
-        return example
-
-
-def _is_valid_query(params, expected_params):
-    """
-    Function to validate get request params.
-    """
-
-    # If expected params, check them. If not, pass.
-    if expected_params:
-        for param in expected_params:
-            # If the expected param is in the query.
-            if param in params:
-                for check, rule in expected_params[param].__dict__.items():
-                    if rule is not None:
-                        error_message = "QueryParam [%s] failed validation check [%s]:[%s]" % (param, check, rule)
-                        if check == "minLength":
-                            if len(params.get(param)) < rule:
-                                raise ValidationError(error_message)
-                        elif check == "maxLength":
-                            if len(params.get(param)) > rule:
-                                raise ValidationError(error_message)
-            # Isn't in the query but it is required, throw a validation exception.
-            elif expected_params[param].required is True:
-                raise ValidationError("QueryParam [%s] failed validation check [Required]:[True]" % param)
-
-    # TODO Add more checks here.
-    return True
-
-
-@csrf_exempt
-def ValidatedGETAPI(request, expected_params, target):
-    """
-    Validate GET APIs.
-    """
-
-    if _is_valid_query(request.GET, expected_params):
-        response = target(request)
+                response = HttpResponse(status=401)
+        except KeyError:
+            response = HttpResponse(status=401)
 
         if isinstance(response, HttpResponse):
             return response
         else:
-            return HttpResponse(json.dumps(response))
+            return HttpResponse(response)
 
 
-@csrf_exempt
-def ValidatedPOSTAPI(request, schema, expected_params, target):
+class Action():
+    """
+    Maps out the api definition associated with the parent Endpoint.
+    One of these will be created per http request method type.
+    """
+
+    example = None
+    schema = None
+    target = None
+    query_parameter_checks = None
+    resp_content_type = None
+    requ_content_type = None
+
+    def __init__(self):
+        """Initialisation funciton."""
+        pass
+
+
+def _validate_query_params(params, checks):
+    """
+    Function to validate get request params. If there are checks to be
+    performed then they will be; these will be items such as length and type
+    checks defined in the definition file.
+    :param params: incoming request parameters.
+    :param checks: dict of param to rule to validate with.
+    :raises ValidationError: raised when any query parameter fails any
+        of its checks defined in the checks param.
+    :returns: true if validated, otherwise raises an exception when fails.
+    """
+
+    # If validation checks, check the params. If not, pass.
+    if checks:
+        for param in checks:
+            # If the expected param is in the query.
+            if param in params:
+                for check, rule in checks[param].__dict__.items():
+                    if rule is not None:
+                        error_message = 'QueryParam [%s] failed validation check [%s]:[%s]' % (param, check, rule)
+                        if check == 'minLength':
+                            if len(params.get(param)) < rule:
+                                raise ValidationError(error_message)
+                        elif check == 'maxLength':
+                            if len(params.get(param)) > rule:
+                                raise ValidationError(error_message)
+                        elif check == 'type':
+                            if rule == 'number':
+                                try:
+                                    float(params.get(param))
+                                except ValueError:
+                                    raise ValidationError(error_message)
+
+            # If the require param isn't in the query.
+            elif checks[param].required is True:
+                raise ValidationError('QueryParam [%s] failed validation check [Required]:[True]' % param)
+
+    return True
+
+
+def _validate_get_api(request, action):
+    """
+    Validate Get APIs.
+    :param request: incoming http request.
+    :param action: action object containing data used to validate
+        and serve the get request.
+    :returns: returns the HttpResponse generated by the action target.
+    """
+
+    if action.query_parameter_checks:
+        # Following raises exception on fail or passes through.
+        _validate_query_params(request.GET, action.query_parameter_checks)
+
+    if action.target:
+        response = action.target(request)
+    else:
+        response = HttpResponse(action.example)
+
+    if not isinstance(response, HttpResponse):
+        # As we weren't given a HttpResponse, we need to create one
+        # and handle the data correctly.
+        if action.resp_content_type == ContentType.JSON:
+            response = HttpResponse(json.dumps(response))
+
+    return response
+
+
+def _validate_post_api(request, action):
     """
     Validate POST APIs.
+    :param request: incoming http request.
+    :param action: action object containing data used to validate
+        and serve the get request.
+    :returns: returns the HttpResponse generated by the action target.
     """
 
     error_response = None
-    if expected_params:
-        _is_valid_query(request.GET, expected_params)   # Either passes through or raises an exception.
+    if action.query_parameter_checks:
+        # Following raises exception on fail or passes through.
+        _validate_query_params(request.GET, action.query_parameter_checks)
 
-    if schema:
-        # If there is a problem with the json data, return a 400.
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-            validate(data, schema) 
-        except Exception as e:
-            # Check the value is in settings, and that it is not None
-            if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
-                error_response = _call_custom_handler(e)
-
-            else:
-                error_response = _validation_error_handler(e)
+    if action.requ_content_type == ContentType.JSON:
+        # If the expected request body is JSON, we need to load it.
+        if action.schema:
+            # If there is any schema, we'll validate it.
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+                validate(data, action.schema)
+            except Exception as e:
+                # Check the value is in settings, and that it is not None
+                if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                    error_response = _call_custom_handler(e)
+                else:
+                    error_response = _validation_error_handler(e)
+        else:
+            # Otherwise just load it (no validation as no schema).
+            data = json.loads(request.body.decode('utf-8'))
     else:
-        data = json.loads(request.body.decode('utf-8'))
+        # The content isn't JSON to just decode it as is.
+        data = request.body.decode('utf-8')
 
     if error_response:
         response = error_response
     else:
         request.validated_data = data
-        response = target(request)
+        if action.target:
+            response = action.target(request)
+        else:
+            response = HttpResponse(action.example)
 
-    if isinstance(response, HttpResponse):
-        return response
-    else:
-        return HttpResponse(json.dumps(response))
+    if not isinstance(response, HttpResponse):
+        # As we weren't given a HttpResponse, we need to create one
+        # and handle the data correctly.
+        if action.resp_content_type == ContentType.JSON:
+            response = HttpResponse(json.dumps(response))
+
+    return response
 
 
 def _validation_error_handler(e):
     """
-    Handle validation errors.
-    This can be overridden via the settings.
+    Default validation handler for when a ValidationError occurs.
+    This behaviour can be overriden in the settings file.
+    :param e: exception raised that must be handled.
+    :returns: HttpResponse with status depending on the error.
+        ValidationError will return a 422 with json info on the cause.
+        Otherwise a FatalException is raised.
     """
 
     if isinstance(e, ValidationError):
-        message = "Validation failed. {}".format(e.message)
+        message = 'Validation failed. {}'.format(e.message)
         error_response = {
-            "message": message,
-            "code": e.validator
+            'message': message,
+            'code': e.validator
         }
         logger.info(message)
         error_resp = HttpResponse(error_response, status=422)
     else:
-        raise FatalException("Malformed JSON in the request.", 400)
+        raise FatalException('Malformed JSON in the request.', 400)
 
     return error_resp
 
 
 def _call_custom_handler(e):
     """
-    Dynamically import and call the custom handler
+    Dynamically import and call the custom validation error handler
     defined by the user in the django settings file.
+    :param e: exception raised that must be handled.
+    :returns: response returned from the custom handler, given the exception.
     """
 
     handler_full_path = settings.RAMLWRAP_VALIDATION_ERROR_HANDLER
-    handler_method = handler_full_path.split(".")[-1]
-    handler_class_path = ".".join(handler_full_path.split(".")[0:-1])
+    handler_method = handler_full_path.split('.')[-1]
+    handler_class_path = '.'.join(handler_full_path.split('.')[0:-1])
 
     handler = getattr(importlib.import_module(handler_class_path), handler_method)
     return handler(e)

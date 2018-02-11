@@ -2,7 +2,7 @@ import logging
 import pyraml.parser
 from django.conf.urls import url
 
-from . validation import ExampleAPI, ValidatedPOSTAPI, ValidatedGETAPI
+from . validation import Action, ContentType, Endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -31,46 +31,49 @@ def _generate_patterns(resource_map, function_map):
 
     for t_url, resource in resource_map.items():
         t_url = t_url[1:]   # String leading /
-        example = None
+        endpoint = Endpoint(t_url)
 
         if resource.methods is not None:
-            schema = None
             if "post" in resource.methods:
-                expected_params = None
+                action = Action()
+
                 if resource.methods['post'].queryParameters:
-                    expected_params = dict(resource.methods['post'].queryParameters)
+                    action.query_parameter_checks = dict(resource.methods['post'].queryParameters)
                 if resource.methods['post'].body:
                     if resource.methods['post'].body['application/json']:
+                        action.requ_content_type = ContentType.JSON
                         if resource.methods['post'].body['application/json'].schema:
-                            schema = resource.methods['post'].body['application/json'].schema
+                            action.schema = resource.methods['post'].body['application/json'].schema
 
                 if resource.methods['post'].responses:
                     if resource.methods['post'].responses[200]:
                         if resource.methods['post'].responses[200].body:
                             if resource.methods['post'].responses[200].body['application/json']:
+                                action.resp_content_type = ContentType.JSON
                                 if resource.methods['post'].responses[200].body['application/json'].example:
-                                    example = resource.methods['post'].responses[200].body['application/json'].example
+                                    action.example = resource.methods['post'].responses[200].body['application/json'].example
 
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedPOSTAPI, {'target': function_map[t_url], 'schema': schema, 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                    action.target = function_map[t_url]
+                endpoint.add_action('POST', action)
 
             if "get" in resource.methods:
-                expected_params = None
+                action = Action()
                 if resource.methods['get'].queryParameters:
-                    expected_params = dict(resource.methods['get'].queryParameters)
+                    action.query_parameter_checks = dict(resource.methods['get'].queryParameters)
                 if resource.methods['get'].responses:
                     if resource.methods['get'].responses[200]:
                         if resource.methods['get'].responses[200].body:
                             if resource.methods['get'].responses[200].body['application/json']:
+                                action.resp_content_type = ContentType.JSON
                                 if resource.methods['get'].responses[200].body['application/json'].example:
-                                    example = resource.methods['get'].responses[200].body['application/json'].example
+                                    action.example = resource.methods['get'].responses[200].body['application/json'].example
 
                 if t_url in function_map:
-                    patterns.append(url("^%s$" % t_url, ValidatedGETAPI, {'target': function_map[t_url], 'expected_params': expected_params}))
-                else:
-                    patterns.append(url("^%s$" % t_url, ExampleAPI, {'example': example, 'schema': schema}))
+                    action.target = function_map[t_url]
+                endpoint.add_action('GET', action)
+
+            patterns.append(url("^%s$" % t_url, endpoint.serve))
 
     return patterns
 
