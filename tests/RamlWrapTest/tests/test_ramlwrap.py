@@ -62,7 +62,8 @@ class RamlWrapTestCase(TestCase):
             "api/1/1.1/1.1.1",
             "api/2",
             "api/3",
-            "api/4"
+            "api/4",
+            "api/5"
         ]
 
         for expected_url in expected_urls:
@@ -85,7 +86,8 @@ class RamlWrapTestCase(TestCase):
             "api/1/1.1/1.1.1": {"GET": {}},
             "api/2": {"GET": {}},
             "api/3": {"GET": {}},
-            "api/4": {"POST": {}}
+            "api/4": {"POST": {}},
+            "api/5": {"PUT": {}}
         }
 
         for pattern in patterns:
@@ -124,6 +126,19 @@ class RamlWrapTestCase(TestCase):
         reply_data = response.content.decode("utf-8")
         
         self.assertEqual(expected_data, json.loads(reply_data))
+        self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
+        self.assertDictEqual(expected_data, json.loads(reply_data))
+
+    def test_raml_put_example_returned(self):
+        """Test that a valid put request with no target returns
+        the example json.
+        """
+
+        expected_data = {"exampleData": "You just made a put request"}
+
+        response = self.client.put("/api/5", content_type="application/json")
+        reply_data = response.content.decode("utf-8")
+
         self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
         self.assertDictEqual(expected_data, json.loads(reply_data))
 

@@ -70,7 +70,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
             # attribute not subpath
             # FIXME: deal with other headers in future ? (unit tests!)
             
-            if k in ("get", "post"):
+            if k in ("get", "post", "put"):
                 act = node[k]
 
                 if not local_endpoint:
@@ -126,6 +126,8 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     local_endpoint.add_action("GET", a)
                 elif k == "post":
                     local_endpoint.add_action("POST", a)
+                elif k == "put":
+                    local_endpoint.add_action("PUT", a)
 
     if local_endpoint:
         # strip leading

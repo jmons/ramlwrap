@@ -184,7 +184,7 @@ class ValidationTestCase(TestCase):
             "POST": {}
         }
 
-        request = RequestFactory().put(
+        request = RequestFactory().delete(
             "/api/3",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")
