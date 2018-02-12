@@ -42,6 +42,7 @@ class Endpoint():
         :returns: returns nothing.
         """
 
+        # if dynamic values, replace the placeholders in url with the dynamic value regex
         if action.dynamic_value:
             for regex_key, regex in action.dynamic_value.items():
                 string_to_replace = "{%s}" % regex_key
