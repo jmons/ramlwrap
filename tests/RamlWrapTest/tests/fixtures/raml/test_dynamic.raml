@@ -1,0 +1,92 @@
+#%RAML 0.8
+---
+title: Test RamlWrap API
+description: A series of useful APIs that can be used to test RamlWrap functionality.
+version:  v0.1
+mediaType:  application/json
+baseUri: http://example.com
+
+protocols: [HTTP]
+
+
+
+/dynamicapi/{dynamic_id}:
+    description: dynamic get url
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a dynamic get request!"}
+
+    /api:
+      description: longer dynamic get url
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                  example: {"exampleData": "You just made another dynamic get request!"}
+
+      description: dynamic post url
+      post:
+        body:
+          application/json:
+              schema: !include json/service_request.json
+              example: !include json/service_request_example.json
+        responses:
+          200:
+            body:
+              application/json:
+                  example: {"exampleData": "You just made a dynamic post request!"}
+
+    /api2:
+      description: another dynamic post url
+      post:
+        body:
+          application/json:
+              schema: !include json/service_request.json
+              example: !include json/service_request_example.json
+        responses:
+          200:
+            body:
+              application/json:
+                  example: {"exampleData": "You just made another dynamic post request!"}
+
+    /{dynamic_id_2}:
+        description: Url with multiple dynamic values
+        get:
+          responses:
+            200:
+              body:
+                application/json:
+                    example: {"exampleData": "You just made a dynamic get request with 2 dynamic values!"}
+
+        /api3:
+            description: Url with multiple dynamic values
+            get:
+              responses:
+                200:
+                  body:
+                    application/json:
+                        example: {"exampleData": "You just made another dynamic get request with 2 dynamic values!"}
+        /api4:
+            description: Url with multiple dynamic values
+            post:
+              body:
+                application/json:
+                    schema: !include json/service_request.json
+                    example: !include json/service_request_example.json
+              responses:
+                200:
+                  body:
+                    application/json:
+                        example: {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}
+/notdynamic:
+    description: Non dynamic url to make sure nothing else is broken
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "regular get request"}

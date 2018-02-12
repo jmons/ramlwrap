@@ -18,7 +18,7 @@ def raml_url_patterns(raml_filepath, function_map):
     :return:
     """
 
-    # This function will run in thtree phases: 
+    # This function will run in three phases:
     # 1) Load the raml (as a yaml document)
     # 2) Parse the raml into nodes that represent 'endpoints'
     # 3) Convert endpoints into a url structure
@@ -26,7 +26,7 @@ def raml_url_patterns(raml_filepath, function_map):
     # migrating from pyraml: file handling now has to be done by us
     # worry about streaming files in future version (for VERY BIG raml?)
     f = open(raml_filepath)
-    tree = yaml.load(f, Loader=Loader) # This loader has the !include directive 
+    tree = yaml.load(f, Loader=Loader)  # This loader has the !include directive
     f.close()
 
     # The resource map is the found nodes
@@ -34,8 +34,8 @@ def raml_url_patterns(raml_filepath, function_map):
     patterns = []
     to_look_at = [
         {
-            "node" : tree,
-            "path" : ""
+            "node": tree,
+            "path": ""
         }
     ]
 
@@ -52,14 +52,13 @@ def raml_url_patterns(raml_filepath, function_map):
 
 
 def _parse_child(resource, patterns, to_look_at, function_map, defaults):
+
     node = resource['node']
     path = resource['path']
-    localEndpoint = None
+    local_endpoint = None
 
     for k in node:
-        
         if k.startswith("/"):
-            
             item = {
                 "node": node[k],
                 "path": "%s%s" % (path, k)
@@ -73,10 +72,10 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
             
             if k in ("get", "post"):
                 act = node[k]
-                if localEndpoint == None:
-                    localEndpoint = Endpoint(path[1:])
 
-                # FIXME: this bit is a rewrite to do dynamicness from mapping
+                if not local_endpoint:
+                    local_endpoint = Endpoint(path[1:])
+
                 # look for a 200.body.{{content-type}}
                 # and a 200.body.{{content-type}}.example
 
@@ -85,7 +84,13 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
 
                 # FIXME: at some point allow a construct for multi-methods
                 if path in function_map:
-                    a.target = function_map[path] 
+                    if "function" in function_map[path]:
+                        # add the target function
+                        a.target = function_map[path]["function"]
+
+                    if "regex" in function_map[path]:
+                        # Add dynamic value regex if present
+                        a.dynamic_value = function_map[path]["regex"]
                 
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
@@ -95,10 +100,10 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     if "schema" in act['body'][a.requ_content_type]:
                         a.schema = act['body'][a.requ_content_type]['schema']
 
-                # This horreendous if blocks are to get around none type erros when the tree
+                # This horrendous if blocks are to get around none type erros when the tree
                 # is not fully built out.
 
-                if 'responses' in act and act['responses'] != None:
+                if 'responses' in act and act['responses']:
                     for status_code in act['responses']:
                         # this is a response that we care about:
                         
@@ -111,18 +116,22 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                                     if two_hundred['body'][a.resp_content_type]:
                                         if "example" in two_hundred['body'][a.resp_content_type]:
                                             a.example = two_hundred['body'][a.resp_content_type]['example']
- 
                                         
-                if "queryParameters" in act and act["queryParameters"] != None:
+                if "queryParameters" in act and act["queryParameters"]:
                     # FIXME: does this help in the query parameterising?
                     # For filling out a.queryparameterchecks
                     a.query_parameter_checks = act['queryParameters']
 
                 if k == "get":
-                    localEndpoint.add_action("GET", a)
+                    local_endpoint.add_action("GET", a)
                 elif k == "post":
-                    localEndpoint.add_action("POST", a)
+                    local_endpoint.add_action("POST", a)
 
-    if localEndpoint != None:
+    if local_endpoint:
         # strip leading
-        patterns.append(url("^%s$" % path[1:], localEndpoint.serve))
+        if local_endpoint.url.startswith("/"):
+            url_to_use = local_endpoint.url[1:]
+        else:
+            url_to_use = local_endpoint.url
+
+        patterns.append(url("^%s$" % url_to_use, local_endpoint.serve))

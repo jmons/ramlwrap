@@ -41,10 +41,16 @@ class Endpoint():
         :param action: the action to map to the request.
         :returns: returns nothing.
         """
+
+        if action.dynamic_value:
+            for regex_key, regex in action.dynamic_value.items():
+                string_to_replace = "{%s}" % regex_key
+                self.url = self.url.replace(string_to_replace, regex)
+
         self.request_method_mapping[request_method] = action
 
     @csrf_exempt
-    def serve(self, request):
+    def serve(self, request, **dynamic_values):
         """Serve the request to the current endpoint. The validation and response
         that is returned depends on the incoming request http method type.
         :param request: incoming http request that must be served correctly.
@@ -53,9 +59,9 @@ class Endpoint():
 
         try:
             if request.method == "GET":
-                response = _validate_get_api(request, self.request_method_mapping["GET"])
+                response = _validate_get_api(request, self.request_method_mapping["GET"], dynamic_values)
             elif request.method == "POST":
-                response = _validate_post_api(request, self.request_method_mapping["POST"])
+                response = _validate_post_api(request, self.request_method_mapping["POST"], dynamic_values)
             else:
                 response = HttpResponse(status=401)
         except KeyError:
@@ -79,6 +85,7 @@ class Action():
     query_parameter_checks = None
     resp_content_type = None
     requ_content_type = None
+    dynamic_value = None
 
     def __init__(self):
         """Initialisation funciton."""
@@ -141,7 +148,7 @@ def _generate_example(request, action):
     return HttpResponse(ret_data, content_type=action.resp_content_type)
 
 
-def _validate_get_api(request, action):
+def _validate_get_api(request, action, dynamic_values=None):
     """
     Validate Get APIs.
     :param request: incoming http request.
@@ -155,7 +162,11 @@ def _validate_get_api(request, action):
         _validate_query_params(request.GET, action.query_parameter_checks)
 
     if action.target:
-        response = action.target(request)
+        # If there was a dynamic value, pass it through
+        if dynamic_values:
+            response = action.target(request, **dynamic_values)
+        else:
+            response = action.target(request)
     else:
         response = _generate_example(request, action)
 
@@ -163,12 +174,15 @@ def _validate_get_api(request, action):
         # As we weren't given a HttpResponse, we need to create one
         # and handle the data correctly.
         if action.resp_content_type == ContentType.JSON:
-            response = HttpResponse(json.dumps(response))
+            if dynamic_values:
+                response = HttpResponse(json.dumps(response), **dynamic_values)
+            else:
+                response = HttpResponse(json.dumps(response))
 
     return response
 
 
-def _validate_post_api(request, action):
+def _validate_post_api(request, action, dynamic_values=None):
     """
     Validate POST APIs.
     :param request: incoming http request.
@@ -206,8 +220,13 @@ def _validate_post_api(request, action):
         response = error_response
     else:
         request.validated_data = data
+
         if action.target:
-            response = action.target(request)
+            if dynamic_values:
+                # If there was a dynamic value, pass it through
+                response = action.target(request, **dynamic_values)
+            else:
+                response = action.target(request)
         else:
             response = _generate_example(request, action)
 
@@ -215,7 +234,10 @@ def _validate_post_api(request, action):
         # As we weren't given a HttpResponse, we need to create one
         # and handle the data correctly.
         if action.resp_content_type == ContentType.JSON:
-            response = HttpResponse(json.dumps(response))
+            if dynamic_values:
+                response = HttpResponse(json.dumps(response), **dynamic_values)
+            else:
+                response = HttpResponse(json.dumps(response))
 
     return response
 
