@@ -100,7 +100,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     if "schema" in act['body'][a.requ_content_type]:
                         a.schema = act['body'][a.requ_content_type]['schema']
 
-                # This horrendous if blocks are to get around none type erros when the tree
+                # These horrendous if blocks are to get around none type erros when the tree
                 # is not fully built out.
 
                 if 'responses' in act and act['responses']:
