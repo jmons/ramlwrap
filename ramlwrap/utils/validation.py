@@ -43,8 +43,8 @@ class Endpoint():
         """
 
         # if dynamic values, replace the placeholders in url with the dynamic value regex
-        if action.dynamic_value:
-            for regex_key, regex in action.dynamic_value.items():
+        if action.regex:
+            for regex_key, regex in action.regex.items():
                 string_to_replace = "{%s}" % regex_key
                 self.url = self.url.replace(string_to_replace, regex)
 
@@ -88,7 +88,7 @@ class Action():
     query_parameter_checks = None
     resp_content_type = None
     requ_content_type = None
-    dynamic_value = None
+    regex = None
 
     def __init__(self):
         """Initialisation funciton."""
