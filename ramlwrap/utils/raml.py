@@ -90,7 +90,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
 
                     if "regex" in function_map[path]:
                         # Add dynamic value regex if present
-                        a.regex = function_map[path]["regex"]
+                        local_endpoint.parse_regex(function_map[path]["regex"])
                 
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
