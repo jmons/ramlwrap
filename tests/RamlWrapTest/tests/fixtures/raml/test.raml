@@ -56,7 +56,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: '{"exampleData": "You just made a get!"}'
+              example: !include json/example2.json
   /3:
     displayName: API 3
     description: Example API with get and post request with query parameters.
@@ -77,7 +77,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: '{"exampleData": "You just made a get!"}'
+              example: {"exampleData": "You just made a get!"}
     post:
       queryParameters:
         param1:
@@ -95,7 +95,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: '{"exampleData": "You just made a post!"}'
+              example: {"exampleData": "You just made a post!"}
   /4:
     displayName: API 4
     description: Example API with empty post body.
@@ -103,3 +103,12 @@ protocols: [HTTP]
       responses:
         200:
           description: Looks good.
+  /5:
+    displayName: API 5
+    description: Example PUT API
+    put:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a put request"}
