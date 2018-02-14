@@ -5,9 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
-from ramlwrap import ramlwrap
-from ramlwrap.utils.exceptions import FatalException
-from ramlwrap.utils.validation import _validate_get_api, _validate_post_api, _validate_query_params, Action, ContentType, Endpoint
+from ramlwrap.utils.validation import _validate_get_api, _validate_post_api, Action, ContentType, Endpoint
 
 from django.conf import settings
 from django.http.response import HttpResponse
@@ -17,7 +15,7 @@ from django.test.client import RequestFactory
 from jsonschema.exceptions import ValidationError
 
 
-def _mock_post_target(request):
+def _mock_post_target(request, dynamic_value=None):
     """Return true if the validated data is correct."""
     if request.validated_data == {"testkey": "testvalue"}:
         valid = True
@@ -26,12 +24,12 @@ def _mock_post_target(request):
     return valid
 
 
-def _mock_post_target_json_resp(request):
+def _mock_post_target_json_resp(request, dynamic_value=None):
     """Mock function that returns some json for a post."""
     return {"valid": True}
 
 
-def _mock_get_target(request):
+def _mock_get_target(request, dynamic_value=None):
     """Return true if the validated data is correct."""
     valid = True
     if not request.GET.get("param1") == "2":
@@ -186,7 +184,7 @@ class ValidationTestCase(TestCase):
             "POST": {}
         }
 
-        request = RequestFactory().put(
+        request = RequestFactory().delete(
             "/api/3",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")

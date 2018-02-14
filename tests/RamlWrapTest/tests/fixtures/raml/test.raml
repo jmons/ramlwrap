@@ -103,3 +103,12 @@ protocols: [HTTP]
       responses:
         200:
           description: Looks good.
+  /5:
+    displayName: API 5
+    description: Example PUT API
+    put:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a put request"}
