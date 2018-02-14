@@ -69,12 +69,14 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
         else:
             # attribute not subpath
             # FIXME: deal with other headers in future ? (unit tests!)
-            
+            if path.startswith("/"):
+                path = path[1:]
+
             if k in ("get", "post", "put"):
                 act = node[k]
 
                 if not local_endpoint:
-                    local_endpoint = Endpoint(path[1:])
+                    local_endpoint = Endpoint(path)
 
                 # look for a 200.body.{{content-type}}
                 # and a 200.body.{{content-type}}.example
@@ -91,7 +93,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     if "regex" in function_map[path]:
                         # Add dynamic value regex if present
                         local_endpoint.parse_regex(function_map[path]["regex"])
-                
+
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
                     # FIXME: this may be a bug requring a try/catch - need more real world example ramls

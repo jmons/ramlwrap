@@ -25,17 +25,17 @@ urlpatterns = [
 
 function_map = {
     # Dynamic urls linked to functions with regex for their dynamic values
-    '/dynamicapi/{dynamic_id}': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    '/dynamicapi/{dynamic_id}/api': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    '/dynamicapi/{dynamic_id}/{dynamic_id_2}/api3': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
-    '/dynamicapi/{dynamic_id}/{dynamic_id_2}/api4': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+    'dynamicapi/{dynamic_id}': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+    'dynamicapi/{dynamic_id}/api': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api3': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api4': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
     # urls not linked to a function, but it must still have linked regex in order for example data to be returned
-    '/dynamicapi/{dynamic_id}/api2': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    '/dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+    'dynamicapi/{dynamic_id}/api2': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+    'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
 
-    '/notdynamic': {'function': regular_api}
+    'notdynamic': {'function': regular_api}
 }
 
 # Load in test raml file
