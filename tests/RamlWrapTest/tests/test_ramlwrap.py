@@ -11,6 +11,9 @@ from ramlwrap.utils.raml import raml_url_patterns
 from ramlwrap.utils.exceptions import FatalException
 from django.test import TestCase, Client
 
+import django
+from distutils.version import StrictVersion
+
 
 def _get_parent_class(method):
     """Return the class for the given method."""
@@ -69,8 +72,14 @@ class RamlWrapTestCase(TestCase):
         for expected_url in expected_urls:
             found = False
             for pattern in patterns:
-                if pattern.regex.match(expected_url):
-                    found = True
+                version = django.get_version()
+                if StrictVersion("2.0.0") >= StrictVersion(version):
+                    if pattern.regex.match(expected_url):
+                        found = True
+                else:
+                    if pattern.pattern.match(expected_url):
+                        found = True
+
             if not found:
                 self.fail("[%s] entrypoint example did not match expected." % expected_url)
 
@@ -92,10 +101,15 @@ class RamlWrapTestCase(TestCase):
 
         for pattern in patterns:
             entrypoint = _get_parent_class(pattern.callback)
-            pattern_url = pattern.regex.match(entrypoint.url).group(0)
-            self.assertEqual(pattern_url, entrypoint.url)
-            for method in expected_methods[pattern_url]:
-                method_info = expected_methods[pattern_url][method]
+            
+            version = django.get_version()
+            if StrictVersion("2.0.0") >= StrictVersion(version):
+                self.assertNotEqual(None, pattern.regex.match(entrypoint.url))
+            else:
+                self.assertNotEqual(None, pattern.pattern.match(entrypoint.url))
+            
+            for method in expected_methods[entrypoint.url]:
+                method_info = expected_methods[entrypoint.url][method]
                 if "example" in method_info:
                     expected_example = method_info["example"]
                     
@@ -177,11 +191,15 @@ class RamlWrapTestCase(TestCase):
 
         for pattern in patterns:
             entrypoint = _get_parent_class(pattern.callback)
-            pattern_url = pattern.regex.match(entrypoint.url).group(0)
-            self.assertEqual(pattern_url, entrypoint.url)
 
-            for method in expected_methods[pattern_url]:
-                method_info = expected_methods[pattern_url][method]
+            version = django.get_version()
+            if StrictVersion("2.0.0") >= StrictVersion(version):
+                self.assertNotEqual(None, pattern.regex.match(entrypoint.url))
+            else:
+                self.assertNotEqual(None, pattern.pattern.match(entrypoint.url))
+
+            for method in expected_methods[entrypoint.url]:
+                method_info = expected_methods[entrypoint.url][method]
                 if "example" in method_info:
                     expected_example = method_info["example"]
                     self.assertEqual(expected_example, entrypoint.request_method_mapping[method].example)
