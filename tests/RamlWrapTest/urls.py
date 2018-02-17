@@ -34,8 +34,8 @@ function_map = {
     'dynamicapi/{dynamic_id}/api2': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
     'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
-
-    'notdynamic': {'function': regular_api}
+    'notdynamic': {'function': regular_api},
+    'notdynamic_old': regular_api
 }
 
 # Load in test raml file

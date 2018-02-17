@@ -171,7 +171,8 @@ class RamlWrapTestCase(TestCase):
                 "GET": {"example": {"exampleData": "You just made another dynamic get request with 2 dynamic values!"}}},
             "dynamicapi/{dynamic_id}/{dynamic_id_2}/api4": {
                 "POST": {"example": {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}}},
-            "notdynamic": {"GET": {"example": {"exampleData": "regular get request"}}}
+            "notdynamic": {"GET": {"example": {"exampleData": "regular get request"}}},
+            "notdynamic_old": {"GET": {"example": {"exampleData": "regular get request"}}}
         }
 
         for pattern in patterns:

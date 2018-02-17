@@ -86,13 +86,20 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
 
                 # FIXME: at some point allow a construct for multi-methods
                 if path in function_map:
-                    if "function" in function_map[path]:
-                        # add the target function
-                        a.target = function_map[path]["function"]
+                    # Check for new style or old style definitions
+                    if type(function_map[path]) is dict:
+                        if "function" in function_map[path]:
+                            # add the target function
+                            a.target = function_map[path]["function"]
 
-                    if "regex" in function_map[path]:
-                        # Add dynamic value regex if present
-                        local_endpoint.parse_regex(function_map[path]["regex"])
+                        if "regex" in function_map[path]:
+                            # Add dynamic value regex if present
+                            local_endpoint.parse_regex(function_map[path]["regex"])
+                    else:
+                        # Depricated! Ramlwrap < 2.0 compatibility 
+                        # I am not completly sure this is always desirable to fix though?
+                        logger.warn("The function map for [%s] is not the 2.0 and above object - style. Please fix as this will be depricated in newer versions of RamlWrap (the fix is a simple copy/paste change to your code layout)" % path)
+                        a.target = function_map[path]
 
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
