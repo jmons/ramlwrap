@@ -22,7 +22,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='1.1.0',
+    version='2.0.0',
 
     description='Raml API mapping toolkit for Django',
     long_description=long_description,
@@ -77,10 +77,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "Django>=1.9.0",
-        "jsonschema",
-        "pyraml-parser",
-        "swagger-parser",
-        "pyyaml"
+        "jsonschema>=2.6.0",
+        "pyyaml>=3.12"
     ]
 
 )
