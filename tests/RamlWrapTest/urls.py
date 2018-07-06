@@ -17,7 +17,7 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from ramlwrap import ramlwrap
-from RamlWrapTest.apis.test_apis import dynamic_api_one, dynamic_api_two, regular_api
+from RamlWrapTest.apis.test_apis import dynamic_api_one, dynamic_api_two, regular_api, dynamic_api_one_type_b, regular_api_type_b
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -35,7 +35,10 @@ function_map = {
     'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
     'notdynamic': {'function': regular_api},
-    'notdynamic_old': regular_api
+    'notdynamic_old': regular_api,
+
+    'dynamicapi_b/{dynamic_id}': {'function': dynamic_api_one_type_b, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+    'notdynamic_b': {'function': regular_api_type_b}
 }
 
 # Load in test raml file

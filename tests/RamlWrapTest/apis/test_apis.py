@@ -26,3 +26,18 @@ def regular_api(request):
     """
 
     return HttpResponse(json.dumps({"message": "woohoo"}), content_type="application/json")
+
+def dynamic_api_one_type_b(request, dynamic_id):
+    """
+    Just an example api to check the dynamic part of the url is working correctly
+    and is passed into the api function
+    """
+
+    return {"dynamicValue": dynamic_id}
+
+def regular_api_type_b(request):
+    """
+    Example api for non dynamic urls
+    """
+
+    return {"message": "woohoo"}

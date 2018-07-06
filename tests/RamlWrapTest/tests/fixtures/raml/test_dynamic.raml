@@ -99,3 +99,21 @@ protocols: [HTTP]
           body:
             application/json:
                 example: {"exampleData": "regular get request"}
+
+/dynamicapi_b/{dynamic_id}:
+    description: dynamic get url
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a dynamic get request!"}
+
+/notdynamic_b:
+    description: Non dynamic url to make sure nothing else is broken
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "regular get request"}
