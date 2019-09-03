@@ -142,7 +142,7 @@ class ValidationTestCase(TestCase):
         with a json body, the body is passed through."""
 
         action = Action()
-        action.requ_content_type = ContentType.JSON
+        action.resp_content_type = ContentType.JSON
         action.target = _mock_post_target
         request = RequestFactory().post(
             path="api/4",
