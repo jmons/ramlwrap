@@ -4,6 +4,7 @@ Loads include files in yaml.
 
 import yaml
 import os.path
+from .exceptions import FatalException
 
 
 class Loader(yaml.Loader):
@@ -18,15 +19,22 @@ class Loader(yaml.Loader):
 
         filename = os.path.join(self._root, self.construct_scalar(node))
 
+        extension = filename.split(".")[-1]
+
         with open(filename, 'r') as f:
-            return yaml.load(f, Loader)
+            if extension in ["yaml", "raml", "yml", "json"]:  # defined by raml 1.0 spec
+                return yaml.load(f, Loader)
+            else:
+                return f.read()
 
     def template(self, node):
 
         filename = os.path.join(self._root, self.construct_scalar(node))
-
-        with open(filename, 'r') as f:
-            return f.read()
+        if os.path.isfile(filename):
+            with open(filename, 'r') as f:
+                return f.read()
+        else:
+            raise FatalException("Could not find %s" % filename)
 
 Loader.add_constructor('!include', Loader.include)
 Loader.add_constructor('!template', Loader.template)

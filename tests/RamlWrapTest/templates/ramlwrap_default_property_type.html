@@ -1,0 +1,13 @@
+{% if property.enum %}
+  enum
+{% elif property.type %}
+  {% if property.type == "array" and property.items.type %}
+    {{property.type}}[{{property.items.type}}]
+  {% elif property.type == "array" and property.items.anyOf %}
+    {{property.type}}[{% for item in property.items.anyOf %}{{item.type}}{% if not forloop.last %}|{% endif %}{% endfor %}]
+  {% else %}
+    {{property.type}}
+  {% endif %}
+{% else %}
+  unknown
+{% endif %}

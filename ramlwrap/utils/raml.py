@@ -68,11 +68,10 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
 
         else:
             # attribute not subpath
-            # FIXME: deal with other headers in future ? (unit tests!)
             if path.startswith("/"):
                 path = path[1:]
 
-            if k in ("get", "post", "put"):
+            if k in ("get", "post", "put", "delete", "patch"):
                 act = node[k]
 
                 if not local_endpoint:
@@ -96,10 +95,15 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                             # Add dynamic value regex if present
                             local_endpoint.parse_regex(function_map[path]["regex"])
                     else:
-                        # Depricated! Ramlwrap < 2.0 compatibility 
-                        # I am not completly sure this is always desirable to fix though?
+                        # Deprecated! Ramlwrap < 2.0 compatibility
+                        # I am not completely sure this is always desirable to fix though?
                         logger.warn("The function map for [%s] is not the 2.0 and above object - style. Please fix as this will be depricated in newer versions of RamlWrap (the fix is a simple copy/paste change to your code layout)" % path)
                         a.target = function_map[path]
+
+                else:
+                    # The path is not in a function map, check if it is a dynamic url as this will cause errors later
+                    if "{" in path:
+                        logger.error("Url: [%s] appears to have a dynamic component but there is no function map for it. You must define the regex in the function map to prevent errors" % path)
 
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
@@ -109,7 +113,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     if "schema" in act['body'][a.requ_content_type]:
                         a.schema = act['body'][a.requ_content_type]['schema']
 
-                # These horrendous if blocks are to get around none type erros when the tree
+                # These horrendous if blocks are to get around none type errors when the tree
                 # is not fully built out.
 
                 if 'responses' in act and act['responses']:
@@ -131,12 +135,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     # For filling out a.queryparameterchecks
                     a.query_parameter_checks = act['queryParameters']
 
-                if k == "get":
-                    local_endpoint.add_action("GET", a)
-                elif k == "post":
-                    local_endpoint.add_action("POST", a)
-                elif k == "put":
-                    local_endpoint.add_action("PUT", a)
+                local_endpoint.add_action(k.upper(), a)
 
     if local_endpoint:
         # strip leading

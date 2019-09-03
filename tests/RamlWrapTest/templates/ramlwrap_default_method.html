@@ -1,0 +1,7 @@
+{% if method.properties %}
+  {% with method as item %}
+    {% include "ramlwrap_default_properties.html" %}
+  {% endwith %}
+{% else %}
+  <p class="alert alert-info">This method doesn't require any data.</p>
+{% endif %}

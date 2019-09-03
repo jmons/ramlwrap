@@ -1,0 +1,26 @@
+{% load api_tags %}
+
+<ul class="list-group mb-3">
+  {% for key in item.properties.keys %}
+    {% with item.properties|hash:key as property %}
+      <!-- Property -->
+      <li class="list-group-item">
+
+        <!-- Property name-->
+        <p class="my-1">
+          <strong>{{key}}</strong>
+          {% if key in item.required %}
+            <span class="text-danger">*</span>
+          {% endif %}
+          <span class="badge badge-secondary text-capitalize">
+            {% include "ramlwrap_default_property_type.html" %}
+          </span>
+        </p>
+
+        <!-- Property description -->
+        {% include "ramlwrap_default_property_description.html" %}
+
+      </li>
+    {% endwith %}
+  {% endfor %}
+</ul>

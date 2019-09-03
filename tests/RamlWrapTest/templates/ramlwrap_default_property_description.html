@@ -1,0 +1,55 @@
+<!-- Description -->
+<p class="my-1">{{property.description}}</p>
+
+<!-- Max length -->
+{% if property.maxLength %}
+  <p class="my-1"><strong>Max length:</strong> {{property.maxLength}}</p>
+{% endif %}
+
+<!-- Enum list -->
+{% if property.enum %}
+  {% if property.enumDescription %}
+    <p class="my-1"><strong>Values:</strong></p>
+    {% for enum in property.enum %}
+      <p class="m-0">
+        <code>{{enum}}</code>
+        {% for enumKey, enumDescription in property.enumDescription.items %}
+          {% if enumKey == enum %}
+            {{enumDescription}}
+          {% endif %}
+        {% endfor %}
+      </p>
+    {% endfor %}
+  {% else %}
+    <p class="my-1"><strong>Values:</strong>
+    {% for enum in property.enum %}
+      <code>{{enum}}</code>{% if not forloop.last %} ,{% endif %}
+    {% endfor %}
+    </p>
+  {% endif %}
+{% endif %}
+
+<!-- Object definition -->
+{% if property.type == "object" %}
+  {% with property as item %}
+    {% include "ramlwrap_default_properties.html" %}
+  {% endwith %}
+{% endif %}
+
+<!-- Array definition -->
+{% if property.type == "array" and property.items %}
+  {% with property.items as item %}
+    {% include "ramlwrap_default_properties.html" %}
+  {% endwith %}
+{% endif %}
+
+<!-- Multi type array -->
+{% if property.type == "array" and property.items and property.items.anyOf %}
+  {% for any in property.items.anyOf %}
+    {% if any.type == "object" %}
+      {% with property.items as item %}
+        {% include "ramlwrap_default_properties.html" %}
+      {% endwith %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
