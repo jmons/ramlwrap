@@ -11,10 +11,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README')) as f:
     long_description = f.read()
 
-#with open(path.join(here, 'pip.list'), encoding='utf-8') as f:
-#with open(path.join(here, 'pip.list')) as f:
-#    requirements = f.readlines()
-
 setup(
     name='ramlwrap',
 
@@ -22,7 +18,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='2.0.0',
+    version='2.1.0rc1',
 
     description='Raml API mapping toolkit for Django',
     long_description=long_description,
@@ -32,7 +28,7 @@ setup(
 
     # Author details
     author='James Taylor',
-    author_email='james@proxama.com',
+    author_email='jtaylor@cpicardgroup.com',
 
     # Choose your license
     license='MIT',
@@ -76,7 +72,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        "Django>=1.9.0",
+        "Django>=1.11.0",
         "jsonschema>=2.6.0",
         "pyyaml>=3.12"
     ]
