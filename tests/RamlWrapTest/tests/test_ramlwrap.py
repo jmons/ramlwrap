@@ -186,7 +186,9 @@ class RamlWrapTestCase(TestCase):
             "dynamicapi/{dynamic_id}/{dynamic_id_2}/api4": {
                 "POST": {"example": {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}}},
             "notdynamic": {"GET": {"example": {"exampleData": "regular get request"}}},
-            "notdynamic_old": {"GET": {"example": {"exampleData": "regular get request"}}}
+            "notdynamic_old": {"GET": {"example": {"exampleData": "regular get request"}}},
+            "notdynamic_b": {"GET": {"example": {"exampleData": "regular get request"}}},
+            "dynamicapi_b/{dynamic_id}": {"GET": {"example": {"exampleData": "You just made a dynamic get request!"}}},
         }
 
         for pattern in patterns:
@@ -333,6 +335,11 @@ class RamlWrapTestCase(TestCase):
                 "status": 200
             },
             {
+                "dynamicValue": "AAA",
+                "responseData": b'{"dynamicValue": "AAA"}',
+                "status": 200
+            },
+            {
                 "dynamicValue": "123",
                 "responseData": b'<h1>Not Found</h1><p>The requested URL /dynamicapi/123/api was not found on this server.</p>',
                 "status": 404
@@ -382,3 +389,15 @@ class RamlWrapTestCase(TestCase):
         response = self.client.get("/notdynamic")
         self.assertEquals(response.status_code, 200)
         self.assertEquals(json.loads(response.content.decode('utf-8')), {"message": "woohoo"})
+
+    def test_type_b_returns(self):
+        """
+        Test correct functionality of the return type on both a and b urls
+        """
+        response = self.client.get("/notdynamic_b")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(json.loads(response.content.decode('utf-8')), {"message": "woohoo"})
+
+        response = self.client.get("/dynamicapi_b/ABCDEF")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(json.loads(response.content.decode('utf-8')), {"dynamicValue":"ABCDEF"})

@@ -185,11 +185,13 @@ def _validate_get_api(request, action, dynamic_values=None):
     if not isinstance(response, HttpResponse):
         # As we weren't given a HttpResponse, we need to create one
         # and handle the data correctly.
+
+        # FIXME: consider changing this element here to be more inspective - if its already a string
+        # how do we know its not already json encoded etc?
         if action.resp_content_type == ContentType.JSON:
-            if dynamic_values:
-                response = HttpResponse(json.dumps(response), **dynamic_values)
-            else:
-                response = HttpResponse(json.dumps(response))
+            response = HttpResponse(json.dumps(response), content_type="application/json")
+        else:
+            raise Exception("Unsuported response content type - contact @jmons for future feature request")
 
     return response
 
