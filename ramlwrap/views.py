@@ -241,14 +241,19 @@ def _parse_properties_definitions(properties, definitions):
         # If a property has a $ref definition reference, replace it with the definition
         if("$ref" in properties[key]):
             definition = properties[key]['$ref'].replace("#/definitions/", "")
-            del properties[key]['$ref']
-
             if(definition in definitions):
                 properties[key] = definitions[definition]
 
-        # If the property is an object, parse its properties for definitions recursively
-        elif "type" in properties[key] and "properties" in properties[key]:
-            if properties[key]['type'] == "object":
+        elif "type" in properties[key]:
+
+            # If the property is an object, parse its properties for definitions recursively
+            if properties[key]['type'] == "object" and "properties" in properties[key]:
                 properties[key]['properties'] = _parse_properties_definitions(properties[key]['properties'], definitions)
+
+            # If the property is an array with a $ref definition reference, replace it with the definition
+            elif properties[key]['type'] == "array" and "items" in properties[key] and "$ref" in properties[key]['items']:
+                definition = properties[key]['items']['$ref'].replace("#/definitions/", "")
+                if(definition in definitions):
+                    properties[key]['items'] = definitions[definition]
 
     return properties
