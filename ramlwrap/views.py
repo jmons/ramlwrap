@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
-import yaml
+import yaml, copy
 
 from .utils.yaml_include_loader import Loader
 
@@ -190,8 +190,8 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
 
                 # Request schema
                 if "schema" in method_data['body'][m.request_content_type]:
-                    m.request_schema = method_data['body'][m.request_content_type]['schema']
-                    m.request_schema = _parse_schema_definitions(m.request_schema)
+                    m.request_schema_original = method_data['body'][m.request_content_type]['schema']
+                    m.request_schema = _parse_schema_definitions(copy.deepcopy(m.request_schema_original))
 
                 # Request example
                 if "example" in method_data['body'][m.request_content_type]:
@@ -210,8 +210,8 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                                 m.response_content_type = next(iter(response['body']))
                                 if response['body'][m.response_content_type]:
                                     if "schema" in response['body'][m.response_content_type]:
-                                        m.response_schema = response['body'][m.response_content_type]['schema']
-                                        m.response_schema = _parse_schema_definitions(m.response_schema)
+                                        m.response_schema_original = response['body'][m.response_content_type]['schema']
+                                        m.response_schema = _parse_schema_definitions(copy.deepcopy(m.response_schema_original))
                                     if "example" in response['body'][m.response_content_type]:
                                         m.response_example = response['body'][m.response_content_type]['example']
 
