@@ -1,0 +1,191 @@
+{% load api_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <style>
+  .list-group-item
+  {
+    border-left-width : 5px;
+  }
+  .list-group .list-group
+  {
+    margin-top : 1rem;
+  }
+  .badge-get
+  {
+    color      : #008c00;
+    background : #e0f1e0;
+  }
+  .badge-post
+  {
+    color      : #0e84f7;
+    background : #e1f0fe;
+  }
+  .badge-put
+  {
+    color      : #bd0ef8;
+    background : #f1e2f2;
+  }
+  .badge-patch
+  {
+    color      : #ff853b;
+    background : #ffebc8;
+  }
+  .badge-delete
+  {
+    color      : #a40000;
+    background : #f2e2e2;
+  }
+  </style>
+</head>
+<body>
+  <div class="container pt-5">
+
+    <div class="mb-4">
+      <h1 class="mb-4">{{title}}</h1>
+
+      {% if description %}
+        <p>{{description}}</p>
+      {% endif %}
+
+      <!-- API details-->
+      <table class="table table-striped table-bordered table-item-data col-md-6">
+        <thead>
+          <tr>
+            <th colspan="2">API Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if version %}
+            <tr>
+              <td>Version</td>
+              <td>{{version}}</td>
+            </tr>
+          {% endif %}
+          {% if baseUri %}
+            <tr>
+              <td>Base URI</td>
+              <td><code>{{baseUri}}</code></td>
+            </tr>
+          {% endif %}
+          {% if mediaType %}
+            <tr>
+              <td>Media Type</td>
+              <td><code>{{mediaType}}</code></td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- API Index -->
+    <div class="mb-5">
+      <h2 class="mb-3">Index</h2>
+      <ul>
+        {% for endpoint in endpoints %}
+          <li><a href="#{{endpoint.url}}">{{endpoint.displayName}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- API Endpoints -->
+    <div class="mb-5">
+    {% for endpoint in endpoints %}
+
+      <div>
+        <!-- Endpoint overview -->
+        <h3>
+          {{endpoint.displayName}}
+          <a href="#{{endpoint.url}}" id="{{endpoint.url}}">⚓</a>
+        </h3>
+        <p>{{endpoint.description}}</p>
+
+        <!-- Endpoint methods -->
+        {% for method in endpoint.methods %}
+
+          <!-- Method overview -->
+          <div>
+            <h5>
+              <span class="badge badge-secondary text-uppercase badge-{{method.method_type}}">{{method.method_type}}</span>
+              {{endpoint.url}}
+              <a href="#{{endpoint.url}}_{{method.method_type}}" id="{{endpoint.url}}_{{method.method_type}}">⚓</a>
+            </h5>
+            <p>{{method.description}}</p>
+
+            <!-- Method request schema -->
+            {% if method.request_schema %}
+
+              <p><strong>Request:</strong></p>
+              <p>{{method.request_schema.description}}</p>
+
+              {% if method.request_schema.anyOf %}
+                <p><strong>Required fields (any)</strong>:
+                {% with method.request_schema.anyOf as required %}
+                  {% include "ramlwrap_default_method_required_fields.html" %}
+                {% endwith %}
+                </p>
+              {% endif %}
+
+              {% if method.request_schema.oneOf %}
+                <p><strong>Required fields (one)</strong>:
+                {% with method.request_schema.oneOf as required %}
+                  {% include "ramlwrap_default_method_required_fields.html" %}
+                {% endwith %}
+                </p>
+              {% endif %}
+
+              {% with method.request_schema as method %}
+                {% include "ramlwrap_default_method.html" %}
+              {% endwith %}
+
+            {% endif %}
+
+            <!-- Method request example -->
+            {% if method.request_example %}
+              <p><strong>Request Example:</strong></p>
+              <div class="card mb-4">
+                <div class="card-body bg-light">
+                  <code>{{method.request_example|json_dump}}</code>
+                </div>
+              </div>
+            {% endif %}
+
+             <!-- Method response schema -->
+            {% if method.response_schema %}
+              <p><strong>Response:</strong></p>
+              <p>{{method.response_schema.description}}</p>
+              {% with method.response_schema as method %}
+                {% include "ramlwrap_default_method.html" %}
+              {% endwith %}
+            {% endif %}
+
+            <!-- Method response example -->
+            {% if method.response_example %}
+              <p><strong>Response Example:</strong></p>
+              <div class="card mb-4">
+                <div class="card-body bg-light">
+                  <code>{{method.response_example|json_dump}}</code>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        {% if not forloop.last %}
+          <hr class="my-5">
+        {% endif %}
+
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
+

@@ -33,7 +33,6 @@ def _internal_mock_post(request, example):
 
 
 class RamlWrapTestCase(TestCase):
-
     client = None
 
     def setUp(self):
@@ -46,9 +45,9 @@ class RamlWrapTestCase(TestCase):
             ramlwrap("RamlWrapTest/tests/fixtures/raml/test.txt", {})
 
     # FIXME new parser loads the empty file without erroring
-    #def test_error_parsing_file(self):
+    # def test_error_parsing_file(self):
     #     """If the a subcomponent of a file doesn't exist it should error."""
-           #Adding skip - this test (or the test file) is bad at the time of writing:
+    # Adding skip - this test (or the test file) is bad at the time of writing:
     #    error_message = "An error occurred reading 'RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml': 'str' object has no attribute 'get'"
     #    #with self.assertRaisesMessage(FatalException, error_message):
     #    with self.assertRaises(Exception):
@@ -66,7 +65,9 @@ class RamlWrapTestCase(TestCase):
             "api/2",
             "api/3",
             "api/4",
-            "api/5"
+            "api/5",
+            "api/patch-api",
+            "api/delete-api"
         ]
 
         for expected_url in expected_urls:
@@ -96,23 +97,25 @@ class RamlWrapTestCase(TestCase):
             "api/2": {"GET": {}},
             "api/3": {"GET": {}},
             "api/4": {"POST": {}},
-            "api/5": {"PUT": {}}
+            "api/5": {"PUT": {}},
+            "api/patch-api": {"PATCH": {}},
+            "api/delete-api": {"DELETE": {}},
         }
 
         for pattern in patterns:
             entrypoint = _get_parent_class(pattern.callback)
-            
+
             version = django.get_version()
             if StrictVersion("2.0.0") >= StrictVersion(version):
                 self.assertNotEqual(None, pattern.regex.match(entrypoint.url))
             else:
                 self.assertNotEqual(None, pattern.pattern.match(entrypoint.url))
-            
+
             for method in expected_methods[entrypoint.url]:
                 method_info = expected_methods[entrypoint.url][method]
                 if "example" in method_info:
                     expected_example = method_info["example"]
-                    
+
                     self.assertDictEqual(expected_example, entrypoint.request_method_mapping[method].example)
 
     def test_raml_post_example_returned(self):
@@ -134,11 +137,11 @@ class RamlWrapTestCase(TestCase):
         the example json.
         """
 
-        expected_data = {"exampleData": "You just made a get!"}
+        expected_data = {"exampleData": "You just made a GET!"}
         response = self.client.get("/api/3?param2=sixsix")
 
         reply_data = response.content.decode("utf-8")
-        
+
         self.assertEqual(expected_data, json.loads(reply_data))
         self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
         self.assertDictEqual(expected_data, json.loads(reply_data))
@@ -148,9 +151,35 @@ class RamlWrapTestCase(TestCase):
         the example json.
         """
 
-        expected_data = {"exampleData": "You just made a put request"}
+        expected_data = {"exampleData": "You just made a PUT request"}
 
         response = self.client.put("/api/5", content_type="application/json")
+        reply_data = response.content.decode("utf-8")
+
+        self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
+        self.assertDictEqual(expected_data, json.loads(reply_data))
+
+    def test_raml_patch_example_returned(self):
+        """Test that a valid patch request with no target returns
+        the example json.
+        """
+
+        expected_data = {"exampleData": "You just made a PATCH request"}
+
+        response = self.client.patch("/api/patch-api", content_type="application/json")
+        reply_data = response.content.decode("utf-8")
+
+        self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
+        self.assertDictEqual(expected_data, json.loads(reply_data))
+
+    def test_raml_delete_example_returned(self):
+        """Test that a valid delete request with no target returns
+        the example json.
+        """
+
+        expected_data = {"exampleData": "You just made a DELETE request"}
+
+        response = self.client.delete("/api/delete-api")
         reply_data = response.content.decode("utf-8")
 
         self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header
@@ -177,18 +206,18 @@ class RamlWrapTestCase(TestCase):
                 "GET": {"example": {"exampleData": "You just made another dynamic get request!"}}},
             "dynamicapi/{dynamic_id}/api": {
                 "POST": {"example": {"exampleData": "You just made a dynamic post request!"}}},
-            "dynamicapi/{dynamic_id}/api2":  {
+            "dynamicapi/{dynamic_id}/api2": {
                 "POST": {"example": {"exampleData": "You just made another dynamic post request!"}}},
             "dynamicapi/{dynamic_id}/{dynamic_id_2}": {
                 "GET": {"example": {"exampleData": "You just made a dynamic get request with 2 dynamic values!"}}},
             "dynamicapi/{dynamic_id}/{dynamic_id_2}/api3": {
-                "GET": {"example": {"exampleData": "You just made another dynamic get request with 2 dynamic values!"}}},
+                "GET": {
+                    "example": {"exampleData": "You just made another dynamic get request with 2 dynamic values!"}}},
             "dynamicapi/{dynamic_id}/{dynamic_id_2}/api4": {
-                "POST": {"example": {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}}},
+                "POST": {
+                    "example": {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}}},
             "notdynamic": {"GET": {"example": {"exampleData": "regular get request"}}},
-            "notdynamic_old": {"GET": {"example": {"exampleData": "regular get request"}}},
-            "notdynamic_b": {"GET": {"example": {"exampleData": "regular get request"}}},
-            "dynamicapi_b/{dynamic_id}": {"GET": {"example": {"exampleData": "You just made a dynamic get request!"}}},
+            "notdynamic_old": {"GET": {"example": {"exampleData": "regular get request"}}}
         }
 
         for pattern in patterns:
@@ -239,7 +268,8 @@ class RamlWrapTestCase(TestCase):
         for value in data:
             response = self.client.get("/dynamicapi/{}".format(value["dynamicValue"]))
             self.assertEquals(response.status_code, value["status"])
-            self.assertEquals(response.content, value["responseData"])
+            if value["status"] != 404:
+                self.assertEquals(response.content, value["responseData"])
 
     def test_multiple_dynamic_value_get_urls_return_example_returned(self):
         """
@@ -269,7 +299,8 @@ class RamlWrapTestCase(TestCase):
         # Test a success response
         response = self.client.get("/dynamicapi/aBc/123/api3")
         self.assertEquals(response.status_code, 200)
-        self.assertEquals({"dynamicValueOne": "aBc", "dynamicValueTwo": "123"}, json.loads(response.content.decode('utf')))
+        self.assertEquals({"dynamicValueOne": "aBc", "dynamicValueTwo": "123"},
+                          json.loads(response.content.decode('utf')))
 
         # Test responses to urls where dynamic value doesn't match the regex
         data = [
@@ -305,7 +336,6 @@ class RamlWrapTestCase(TestCase):
         for value in data:
             response = self.client.get("/dynamicapi/{}/{}/api3".format(value["dynamicId1"], value["dynamicId2"]))
             self.assertEquals(response.status_code, 404)
-            self.assertEquals(value["responseData"], response.content)
 
     def test_multiple_dynamic_value_post_urls(self):
         """
@@ -316,10 +346,12 @@ class RamlWrapTestCase(TestCase):
         """
 
         # Test a success response
-        response = self.client.post("/dynamicapi/hello/1111/api4", json.dumps({"data": "value"}), content_type="application/json")
+        response = self.client.post("/dynamicapi/hello/1111/api4", json.dumps({"data": "value"}),
+                                    content_type="application/json")
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals({"dynamicValueOne": "hello", "dynamicValueTwo": "1111"}, json.loads(response.content.decode('utf')))
+        self.assertEquals({"dynamicValueOne": "hello", "dynamicValueTwo": "1111"},
+                          json.loads(response.content.decode('utf')))
 
     def test_dynamic_post_urls(self):
         """
@@ -332,11 +364,6 @@ class RamlWrapTestCase(TestCase):
             {
                 "dynamicValue": "aBc",
                 "responseData": b'{"dynamicValue": "aBc"}',
-                "status": 200
-            },
-            {
-                "dynamicValue": "AAA",
-                "responseData": b'{"dynamicValue": "AAA"}',
                 "status": 200
             },
             {
@@ -360,7 +387,8 @@ class RamlWrapTestCase(TestCase):
             response = self.client.post("/dynamicapi/{}/api".format(value["dynamicValue"]),
                                         json.dumps({"data": "value"}), content_type="application/json")
             self.assertEquals(response.status_code, value["status"])
-            self.assertEquals(response.content, value["responseData"])
+            if value["status"] != 404:
+                self.assertEquals(response.content, value["responseData"])
 
     def test_dynamic_raml_post_example_returned(self):
         """
@@ -368,7 +396,8 @@ class RamlWrapTestCase(TestCase):
         (reqex must still exist!)
         """
 
-        response = self.client.post("/dynamicapi/mysteryvalue/api2", data=json.dumps({"data": "foobar"}), content_type="application/json")
+        response = self.client.post("/dynamicapi/mysteryvalue/api2", data=json.dumps({"data": "foobar"}),
+                                    content_type="application/json")
 
         self.assertEqual(response.status_code, 200)
 
@@ -389,15 +418,3 @@ class RamlWrapTestCase(TestCase):
         response = self.client.get("/notdynamic")
         self.assertEquals(response.status_code, 200)
         self.assertEquals(json.loads(response.content.decode('utf-8')), {"message": "woohoo"})
-
-    def test_type_b_returns(self):
-        """
-        Test correct functionality of the return type on both a and b urls
-        """
-        response = self.client.get("/notdynamic_b")
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(json.loads(response.content.decode('utf-8')), {"message": "woohoo"})
-
-        response = self.client.get("/dynamicapi_b/ABCDEF")
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(json.loads(response.content.decode('utf-8')), {"dynamicValue":"ABCDEF"})

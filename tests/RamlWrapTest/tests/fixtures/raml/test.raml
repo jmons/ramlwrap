@@ -77,7 +77,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: {"exampleData": "You just made a get!"}
+              example: {"exampleData": "You just made a GET!"}
     post:
       queryParameters:
         param1:
@@ -95,7 +95,7 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-              example: {"exampleData": "You just made a post!"}
+              example: {"exampleData": "You just made a POST!"}
   /4:
     displayName: API 4
     description: Example API with empty post body.
@@ -111,4 +111,22 @@ protocols: [HTTP]
         200:
           body:
             application/json:
-                example: {"exampleData": "You just made a put request"}
+                example: {"exampleData": "You just made a PUT request"}
+  /patch-api:
+    displayName: API for testing PATCH
+    description: Example PATCH API
+    patch:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a PATCH request"}
+  /delete-api:
+    displayName: API for testing DELETE
+    description: Example DELETE API
+    delete:
+      responses:
+        200:
+          body:
+            application/json:
+                example: {"exampleData": "You just made a DELETE request"}

@@ -7,7 +7,7 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 from django.conf import settings
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from . exceptions import FatalException
@@ -19,8 +19,12 @@ class ContentType:
     """Represents http content types."""
     JSON = 'application/json'
 
+    def __init__(self):
+        """Initialisation function."""
+        pass
 
-class Endpoint():
+
+class Endpoint:
     """
     Endpoint that represents one url in the service. Each endpoint
     contains Actions which represent a request method that the endpoint
@@ -65,17 +69,11 @@ class Endpoint():
         :returns: returns the HttpResponse, content of which is created by the target function.
         """
 
-        try:
-            if request.method == "GET":
-                response = _validate_get_api(request, self.request_method_mapping["GET"], dynamic_values)
-            elif request.method == "POST":
-                response = _validate_post_api(request, self.request_method_mapping["POST"], dynamic_values)
-            elif request.method == "PUT":
-                response = _validate_put_api(request, self.request_method_mapping["PUT"], dynamic_values)
-            else:
-                response = HttpResponse(status=401)
-        except KeyError:
-            response = HttpResponse(status=401)
+        if request.method in self.request_method_mapping:
+            action = self.request_method_mapping[request.method]
+            response = _validate_api(request, action, dynamic_values)
+        else:
+            response = HttpResponseNotAllowed(self.request_method_mapping.keys())
 
         if isinstance(response, HttpResponse):
             return response
@@ -83,7 +81,7 @@ class Endpoint():
             return HttpResponse(response)
 
 
-class Action():
+class Action:
     """
     Maps out the api definition associated with the parent Endpoint.
     One of these will be created per http request method type.
@@ -98,13 +96,13 @@ class Action():
     regex = None
 
     def __init__(self):
-        """Initialisation funciton."""
+        """Initialisation function."""
         pass
 
 
 def _validate_query_params(params, checks):
     """
-    Function to validate get request params. If there are checks to be
+    Function to validate HTTP GET request params. If there are checks to be
     performed then they will be; these will be items such as length and type
     checks defined in the definition file.
     :param params: incoming request parameters.
@@ -142,11 +140,11 @@ def _validate_query_params(params, checks):
     return True
 
 
-def _generate_example(request, action):
+def _generate_example(action):
     """
     This is used by both GET and POST when returning an example 
     """
-    # The original method of generating straight from the xample is bad 
+    # The original method of generating straight from the example is bad
     # because v2 parser now has an object, which also allows us to do the 
     # headers correctly
     
@@ -158,9 +156,9 @@ def _generate_example(request, action):
     return HttpResponse(ret_data, content_type=action.resp_content_type)
 
 
-def _validate_get_api(request, action, dynamic_values=None):
+def _validate_api(request, action, dynamic_values=None):
     """
-    Validate Get APIs.
+    Validate APIs content.
     :param request: incoming http request.
     :param action: action object containing data used to validate
         and serve the get request.
@@ -173,75 +171,36 @@ def _validate_get_api(request, action, dynamic_values=None):
         # Following raises exception on fail or passes through.
         _validate_query_params(request.GET, action.query_parameter_checks)
 
-    if action.target:
-        # If there was a dynamic value, pass it through
-        if dynamic_values:
-            response = action.target(request, **dynamic_values)
-        else:
-            response = action.target(request)
+    error_response = None
+
+    if request.body:
+        error_response = _validate_body(request, action)
+
+    if error_response:
+        response = error_response
     else:
-        response = _generate_example(request, action)
+        if action.target:
+            if dynamic_values:
+                # If there was a dynamic value, pass it through
+                response = action.target(request, **dynamic_values)
+            else:
+                response = action.target(request)
+        else:
+            response = _generate_example(action)
 
     if not isinstance(response, HttpResponse):
         # As we weren't given a HttpResponse, we need to create one
         # and handle the data correctly.
-
-        # FIXME: consider changing this element here to be more inspective - if its already a string
-        # how do we know its not already json encoded etc?
         if action.resp_content_type == ContentType.JSON:
             response = HttpResponse(json.dumps(response), content_type="application/json")
         else:
+            # FIXME: write more types in here
             raise Exception("Unsuported response content type - contact @jmons for future feature request")
 
     return response
 
 
-def _validate_post_api(request, action, dynamic_values=None):
-    """
-    Validate POST APIs.
-    :param request: incoming http request.
-    :param action: action object containing data used to validate
-        and serve the post request.
-    :param dynamic_values: dict of dynamic id names against actual values to substitute into url
-     e.g. {'dynamic_id': 'aBc'}
-    :returns: returns the HttpResponse generated by the action target.
-    """
-
-    if action.query_parameter_checks:
-        # Following raises exception on fail or passes through.
-        _validate_query_params(request.GET, action.query_parameter_checks)
-
-    return _common_validation(request, action, dynamic_values)
-
-
-def _validate_put_api(request, action, dynamic_values=None):
-    """
-    Validate PUT APIs.
-    :param request: incoming http request.
-    :param action: action object containing data used to validate
-        and serve the put request.
-    :param dynamic_values: dict of dynamic id names against actual values to substitute into url
-     e.g. {'dynamic_id': 'aBc'}
-    :returns: returns the HttpResponse generated by the action target.
-    """
-
-    if action.query_parameter_checks:
-        # Following raises exception on fail or passes through.
-        _validate_query_params(request.PUT, action.query_parameter_checks)
-
-    return _common_validation(request, action, dynamic_values)
-
-
-def _common_validation(request, action, dynamic_values=None):
-    """
-    Function for common logic between post and put validation
-    :param request: incoming http request.
-    :param action: action object containing data used to validate
-        and serve the request.
-    :param dynamic_values: dict of dynamic id names against actual values to substitute into url
-     e.g. {'dynamic_id': 'aBc'}
-    """
-
+def _validate_body(request, action):
     error_response = None
 
     if action.requ_content_type == ContentType.JSON:
@@ -253,7 +212,8 @@ def _common_validation(request, action, dynamic_values=None):
                 validate(data, action.schema)
             except Exception as e:
                 # Check the value is in settings, and that it is not None
-                if hasattr(settings, 'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                if hasattr(settings,
+                           'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
                     error_response = _call_custom_handler(e)
                 else:
                     error_response = _validation_error_handler(e)
@@ -264,30 +224,10 @@ def _common_validation(request, action, dynamic_values=None):
         # The content isn't JSON to just decode it as is.
         data = request.body.decode('utf-8')
 
-    if error_response:
-        response = error_response
-    else:
+    if not error_response:
         request.validated_data = data
 
-        if action.target:
-            if dynamic_values:
-                # If there was a dynamic value, pass it through
-                response = action.target(request, **dynamic_values)
-            else:
-                response = action.target(request)
-        else:
-            response = _generate_example(request, action)
-
-    if not isinstance(response, HttpResponse):
-        # As we weren't given a HttpResponse, we need to create one
-        # and handle the data correctly.
-        if action.resp_content_type == ContentType.JSON:
-            if dynamic_values:
-                response = HttpResponse(json.dumps(response), **dynamic_values)
-            else:
-                response = HttpResponse(json.dumps(response))
-
-    return response
+    return error_response
 
 
 def _validation_error_handler(e):
@@ -307,7 +247,7 @@ def _validation_error_handler(e):
             'code': e.validator
         }
         logger.info(message)
-        error_resp = HttpResponse(error_response, status=422)
+        error_resp = JsonResponse(error_response, status=422)
     else:
         raise FatalException('Malformed JSON in the request.', 400)
 

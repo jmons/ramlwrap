@@ -1,0 +1,6 @@
+{% for any in required %}
+  {% for field in any.required %}
+    <code>{{field}}</code>
+  {% endfor %}
+  {% if forloop.last %}.{% else %},{% endif %}
+{% endfor %}

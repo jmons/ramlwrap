@@ -11,8 +11,10 @@ protocols: [HTTP]
 
 
 /dynamicapi/{dynamic_id}:
+    displayName: Dynamic API
     description: dynamic get url
     get:
+      description: This is a thing
       responses:
         200:
           body:
@@ -20,15 +22,8 @@ protocols: [HTTP]
                 example: {"exampleData": "You just made a dynamic get request!"}
 
     /api:
+      displayName: Longer dynamic API
       description: longer dynamic get url
-      get:
-        responses:
-          200:
-            body:
-              application/json:
-                  example: {"exampleData": "You just made another dynamic get request!"}
-
-      description: dynamic post url
       post:
         body:
           application/json:
@@ -39,8 +34,18 @@ protocols: [HTTP]
             body:
               application/json:
                   example: {"exampleData": "You just made a dynamic post request!"}
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                  example: {"exampleData": "You just made another dynamic get request!"}
+
+      description: dynamic post url
+
 
     /api2:
+      displayName: Another dynamic API
       description: another dynamic post url
       post:
         body:
@@ -54,6 +59,7 @@ protocols: [HTTP]
                   example: {"exampleData": "You just made another dynamic post request!"}
 
     /{dynamic_id_2}:
+        displayName: One more dynamic API
         description: Url with multiple dynamic values
         get:
           responses:
@@ -63,6 +69,7 @@ protocols: [HTTP]
                     example: {"exampleData": "You just made a dynamic get request with 2 dynamic values!"}
 
         /api3:
+            displayName: Longer API
             description: Url with multiple dynamic values
             get:
               responses:
@@ -71,6 +78,7 @@ protocols: [HTTP]
                     application/json:
                         example: {"exampleData": "You just made another dynamic get request with 2 dynamic values!"}
         /api4:
+            displayName: Longer API 2
             description: Url with multiple dynamic values
             post:
               body:
@@ -83,6 +91,7 @@ protocols: [HTTP]
                     application/json:
                         example: {"exampleData": "You just made another dynamic post request with 2 dynamic values!"}
 /notdynamic:
+    displayName: Not dynamic API
     description: Non dynamic url to make sure nothing else is broken
     get:
       responses:
@@ -90,26 +99,9 @@ protocols: [HTTP]
           body:
             application/json:
                 example: {"exampleData": "regular get request"}
-                
+
 /notdynamic_old:
-    description: Non dynamic url to make sure nothing else is broken
-    get:
-      responses:
-        200:
-          body:
-            application/json:
-                example: {"exampleData": "regular get request"}
-
-/dynamicapi_b/{dynamic_id}:
-    description: dynamic get url
-    get:
-      responses:
-        200:
-          body:
-            application/json:
-                example: {"exampleData": "You just made a dynamic get request!"}
-
-/notdynamic_b:
+    displayName: Not dynamic API 2
     description: Non dynamic url to make sure nothing else is broken
     get:
       responses:

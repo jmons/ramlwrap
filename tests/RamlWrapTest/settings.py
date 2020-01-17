@@ -37,17 +37,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ramlwrap',
+    'RamlWrapTest'
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'RamlWrapTest.urls'
 
@@ -121,3 +124,4 @@ STATIC_URL = '/static/'
 
 # RamlWrap Custom Validation Exception
 RAMLWRAP_VALIDATION_ERROR_HANDLER = None
+
