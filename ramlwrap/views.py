@@ -29,13 +29,13 @@ class RamlDoc(View):
 
         if "type" in request.GET:
             if request.GET['type'] in ("single_api", "schema"):
-                target_endpoint = request.GET['entry'] 
+                target_endpoint = request.GET['entry']
                 endpoints = context['endpoints']
                 for suspect in endpoints:
                     if suspect.url == target_endpoint:
                         endpoints = [ suspect ]
                         context['endpoints'] = endpoints
-        
+
             if request.GET['type'] == "schema":
                 if request.GET['schema_direction'] == "request":
                     # FIXME ok this doesnt work. Writing here- need to have a better string to work out what you want.
@@ -67,9 +67,9 @@ class RamlDoc(View):
         while item_queue:
             item = item_queue.pop(0)
             _parse_child(item, endpoints, item_queue)
-        
+
         # Build object with parsed data
-        context = { 
+        context = {
             "endpoints" : endpoints
         }
 
@@ -89,7 +89,7 @@ class RamlDoc(View):
 
         # Return the data to the template
         return context
- 
+
 
 # FIXME delete this before committing. Holder for Gateway
 def noscript(request):
@@ -102,7 +102,7 @@ class Endpoint():
     request_type = ""
     methods      = None
     level        = 0
-    
+
     def __init__(self):
         self.methods = []
 
@@ -130,7 +130,7 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
     node  = resource['node']
     path  = resource['path']
 
-    if(rootnode): 
+    if(rootnode):
         level = -2
     else:
         level = resource['level']
@@ -147,7 +147,7 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
             item_queue.insert(0, item)
 
     # Skip rootnode
-    if rootnode: 
+    if rootnode:
         return
 
     # Skip empty nodes
@@ -172,11 +172,11 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
     for method_type in ["get", "post", "put", "patch", "delete"]:
 
         if method_type in node:
-            method_data = node[method_type] 
+            method_data = node[method_type]
 
             m = Method()
             m.method_type = method_type
-            current_endpoint.methods.append(m)  
+            current_endpoint.methods.append(m)
 
             # Method description
             if "description" in method_data:
@@ -191,6 +191,7 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                 # Request schema
                 if "schema" in method_data['body'][m.request_content_type]:
                     m.request_schema = method_data['body'][m.request_content_type]['schema']
+                    m.request_schema = _parse_schema_definitions(m.request_schema)
 
                 # Request example
                 if "example" in method_data['body'][m.request_content_type]:
@@ -210,5 +211,44 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                                 if response['body'][m.response_content_type]:
                                     if "schema" in response['body'][m.response_content_type]:
                                         m.response_schema = response['body'][m.response_content_type]['schema']
+                                        m.response_schema = _parse_schema_definitions(m.response_schema)
                                     if "example" in response['body'][m.response_content_type]:
                                         m.response_example = response['body'][m.response_content_type]['example']
+
+
+def _parse_schema_definitions(schema):
+
+    # If the schema has definitions, replace definitions references with the definition data
+    if "definitions" in schema:
+        definitions = schema['definitions']
+
+        # Parse definitions in definition properties
+        for key in definitions:
+            if "properties" in definitions[key]:
+                definitions[key]['properties'] = _parse_properties_definitions(definitions[key]['properties'], definitions)
+
+        # Parse definitions in properties
+        if "properties" in schema:
+            schema['properties'] = _parse_properties_definitions(schema['properties'], definitions)
+
+    return schema
+
+
+def _parse_properties_definitions(properties, definitions):
+
+    for key in properties:
+
+        # If a property has a $ref definition reference, replace it with the definition
+        if("$ref" in properties[key]):
+            definition = properties[key]['$ref'].replace("#/definitions/", "")
+            del properties[key]['$ref']
+
+            if(definition in definitions):
+                properties[key] = definitions[definition]
+
+        # If the property is an object, parse its properties for definitions recursively
+        elif "type" in properties[key] and "properties" in properties[key]:
+            if properties[key]['type'] == "object":
+                properties[key]['properties'] = _parse_properties_definitions(properties[key]['properties'], definitions)
+
+    return properties
