@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
-import yaml
+import yaml, copy
 
 from .utils.yaml_include_loader import Loader
 
@@ -190,8 +190,8 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
 
                 # Request schema
                 if "schema" in method_data['body'][m.request_content_type]:
-                    m.request_schema = method_data['body'][m.request_content_type]['schema']
-                    m.request_schema = _parse_schema_definitions(m.request_schema)
+                    m.request_schema_original = method_data['body'][m.request_content_type]['schema']
+                    m.request_schema = _parse_schema_definitions(copy.deepcopy(m.request_schema_original))
 
                 # Request example
                 if "example" in method_data['body'][m.request_content_type]:
@@ -210,8 +210,8 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                                 m.response_content_type = next(iter(response['body']))
                                 if response['body'][m.response_content_type]:
                                     if "schema" in response['body'][m.response_content_type]:
-                                        m.response_schema = response['body'][m.response_content_type]['schema']
-                                        m.response_schema = _parse_schema_definitions(m.response_schema)
+                                        m.response_schema_original = response['body'][m.response_content_type]['schema']
+                                        m.response_schema = _parse_schema_definitions(copy.deepcopy(m.response_schema_original))
                                     if "example" in response['body'][m.response_content_type]:
                                         m.response_example = response['body'][m.response_content_type]['example']
 
@@ -241,14 +241,19 @@ def _parse_properties_definitions(properties, definitions):
         # If a property has a $ref definition reference, replace it with the definition
         if("$ref" in properties[key]):
             definition = properties[key]['$ref'].replace("#/definitions/", "")
-            del properties[key]['$ref']
-
             if(definition in definitions):
                 properties[key] = definitions[definition]
 
-        # If the property is an object, parse its properties for definitions recursively
-        elif "type" in properties[key] and "properties" in properties[key]:
-            if properties[key]['type'] == "object":
+        elif "type" in properties[key]:
+
+            # If the property is an object, parse its properties for definitions recursively
+            if properties[key]['type'] == "object" and "properties" in properties[key]:
                 properties[key]['properties'] = _parse_properties_definitions(properties[key]['properties'], definitions)
+
+            # If the property is an array with a $ref definition reference, replace it with the definition
+            elif properties[key]['type'] == "array" and "items" in properties[key] and "$ref" in properties[key]['items']:
+                definition = properties[key]['items']['$ref'].replace("#/definitions/", "")
+                if(definition in definitions):
+                    properties[key]['items'] = definitions[definition]
 
     return properties
