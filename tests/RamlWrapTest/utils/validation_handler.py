@@ -22,3 +22,15 @@ def custom_validation_exception(e):
     """
 
     raise NotImplementedError(e)
+
+
+def custom_validation_with_request_action(e, request, action):
+    """
+    Custom validation handler to override the default
+    and return a HttpResponse I'm a teapot code.
+    """
+
+    return {
+        "path": request.path,
+        "content_type": action.requ_content_type
+    }

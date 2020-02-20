@@ -137,6 +137,25 @@ class ValidationTestCase(TestCase):
         response = self.client.post("/api", data="{}", content_type="application/json")
         self.assertEquals(422, response.status_code)
 
+    def test_validation_handler_with_request_action(self):
+        """
+        Test that if the handler handles request and action, these are passed through
+        """
+        endpoint = "/api"
+
+        # Test that the custom method is called and a response is returned.
+        settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = "RamlWrapTest.utils.validation_handler.custom_validation_with_request_action"
+
+        response = self.client.post(endpoint, data="{}", content_type="application/json")
+
+        self.assertEquals(200, response.status_code)
+        expected_json_body = {
+            "path": endpoint,
+            "content_type": "application/json"
+
+        }
+        self.assertEqual(json.loads(response.content.decode("utf-8")), expected_json_body)
+
     def test_no_schema_validation_passes_through(self):
         """Test that given an action with no schema and a request
         with a json body, the body is passed through."""
