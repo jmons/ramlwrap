@@ -157,6 +157,17 @@
               </div>
             {% endif %}
 
+            {% if method.request_examples %}
+              {% for key in method.request_examples %}
+                <p><strong>{{key}} Request Example:</strong></p>
+                <div class="card mb-4">
+                  <div class="card-body bg-light">
+                    <code>{{method.request_examples|hash:key|json_dump}}</code>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
              <!-- Method response schema -->
             {% if method.response_schema %}
               <p><strong>Response:</strong></p>
@@ -175,6 +186,18 @@
                 </div>
               </div>
             {% endif %}
+
+            {% if method.response_examples %}
+              {% for key in method.response_examples %}
+                <p><strong>{{key}} Response Example:</strong></p>
+                <div class="card mb-4">
+                  <div class="card-body bg-light">
+                    <code>{{method.response_examples|hash:key|json_dump}}</code>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
           </div>
         {% endfor %}
 

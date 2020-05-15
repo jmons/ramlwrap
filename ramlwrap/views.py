@@ -115,9 +115,12 @@ class Method():
     request_content_type  = None
     request_schema        = None
     request_example       = None
+    request_examples      = None
+
     response_content_type = None
-    response_example      = None
     response_schema       = None
+    response_example      = None
+    response_examples     = None
     response_description  = None
 
 
@@ -197,6 +200,10 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                 if "example" in method_data['body'][m.request_content_type]:
                     m.request_example = method_data['body'][m.request_content_type]['example']
 
+                # Request examples
+                if "examples" in method_data['body'][m.request_content_type]:
+                    m.request_examples = method_data['body'][m.request_content_type]['examples']
+
             # Response
             if 'responses' in method_data and method_data['responses']:
                 for status_code in method_data['responses']:
@@ -214,6 +221,8 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                                         m.response_schema = _parse_schema_definitions(copy.deepcopy(m.response_schema_original))
                                     if "example" in response['body'][m.response_content_type]:
                                         m.response_example = response['body'][m.response_content_type]['example']
+                                    if "examples" in response['body'][m.response_content_type]:
+                                        m.response_examples = response['body'][m.response_content_type]['examples']
 
 
 def _parse_schema_definitions(schema):
