@@ -1,0 +1,24 @@
+#%RAML 1.0
+---
+title: Test RamlWrap 1.0 API
+description: A series of useful APIs that can be used to test RamlWrap functionality.
+version:  v0.1
+mediaType:  application/json
+baseUri: http://example.com
+
+protocols: [HTTP]
+
+/ramlv1-api:
+  displayName: API root
+  /multi-example:
+    displayName: Multiple examples in RAML
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              examples:
+                one:
+                  {"exampleData": "This is the first example response"}
+                two:
+                  {"exampleData2": "This is a second example"}

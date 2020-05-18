@@ -46,5 +46,5 @@ function_map = {
 # Load in test raml file
 urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test.raml", function_map))
 urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", function_map))
-
+urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/ramlv1_tests.raml", function_map))
 
