@@ -129,6 +129,12 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                                     if two_hundred['body'][a.resp_content_type]:
                                         if "example" in two_hundred['body'][a.resp_content_type]:
                                             a.example = two_hundred['body'][a.resp_content_type]['example']
+                                        elif "examples" in two_hundred['body'][a.resp_content_type] and \
+                                                two_hundred['body'][a.resp_content_type]['examples']:
+                                            # If multiple examples in raml, just return the first one
+                                            examples = two_hundred['body'][a.resp_content_type]['examples'].values()
+                                            value_iterator = iter(examples)
+                                            a.example = next(value_iterator)
                                         
                 if "queryParameters" in act and act["queryParameters"]:
                     # FIXME: does this help in the query parameterising?
