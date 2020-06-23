@@ -138,16 +138,21 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
     else:
         level = resource['level']
 
+    # Storing endpoints in temporary array to preserve order
+    child_item_array = []
+
     # Parse children endpoints
     for key in node:
-
         if key.startswith("/"):
             item = {
                 "node"  : node[key],
                 "path"  : "%s%s" % (path, key),
                 "level" : level + 1
             }
-            item_queue.insert(0, item)
+            child_item_array.insert(0, item)
+
+    for i in child_item_array:
+        item_queue.insert(0, i)
 
     # Skip rootnode
     if rootnode:
