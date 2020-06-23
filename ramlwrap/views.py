@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from collections import OrderedDict
 
 import yaml, copy
 
@@ -114,6 +115,7 @@ class Method():
 
     request_content_type  = None
     request_schema        = None
+    request_schema_original = None
     request_example       = None
     request_examples      = None
 
@@ -122,6 +124,19 @@ class Method():
     response_example      = None
     response_examples     = None
     response_description  = None
+
+    responses = []
+
+
+class Response:
+
+    def __init__(self, content_type=None, schema=None, schema_original=None, description=None, status_code=None):
+        self.content_type = content_type
+        self.schema = schema
+        self.schema_original = schema_original
+        self.examples = []
+        self.description = description
+        self.status_code = status_code
 
 
 def _parse_child(resource, endpoints, item_queue, rootnode=False):
@@ -212,22 +227,42 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
             # Response
             if 'responses' in method_data and method_data['responses']:
                 for status_code in method_data['responses']:
-                    if status_code == 200:
-                        response = method_data['responses'][status_code]
-                        for response_attr in response:
-                            if response_attr == "description":
-                                m.response_description = response['description']
-                            elif response_attr == "body":
-                                # not sure if this can fail and be valid raml?
-                                m.response_content_type = next(iter(response['body']))
-                                if response['body'][m.response_content_type]:
-                                    if "schema" in response['body'][m.response_content_type]:
-                                        m.response_schema_original = response['body'][m.response_content_type]['schema']
-                                        m.response_schema = _parse_schema_definitions(copy.deepcopy(m.response_schema_original))
-                                    if "example" in response['body'][m.response_content_type]:
-                                        m.response_example = response['body'][m.response_content_type]['example']
-                                    if "examples" in response['body'][m.response_content_type]:
-                                        m.response_examples = response['body'][m.response_content_type]['examples']
+                    _parse_response(m, method_data, status_code)
+
+
+def _parse_response(m, method_data, status_code):
+    response = method_data['responses'][status_code]
+    response_obj = Response(status_code=status_code)
+
+    for response_attr in response:
+        if response_attr == "description":
+            response_obj.description = response['description']
+        elif response_attr == "body":
+            # not sure if this can fail and be valid raml?
+            response_obj.content_type = next(iter(response['body']))
+            if response['body'][response_obj.content_type]:
+                if "schema" in response['body'][response_obj.content_type]:
+                    response_obj.schema_original = response['body'][response_obj.content_type][
+                        'schema']
+                    response_obj.schema = _parse_schema_definitions(
+                        copy.deepcopy(response_obj.schema_original))
+                if "example" in response['body'][response_obj.content_type]:
+                    response_obj.examples.append(response['body'][response_obj.content_type]['example'])
+                if "examples" in response['body'][response_obj.content_type]:
+                    response_obj.examples.extend(response['body'][response_obj.content_type]['examples'])
+
+    # For backward compatability, store 200 responses in specific fields
+    if status_code == 200:
+        m.response_content_type = response_obj.content_type
+        m.response_description = response_obj.description
+        m.response_schema_original = response_obj.schema_original
+        m.response_schema = response_obj.schema
+        if len(response_obj.examples) == 1:
+            m.response_example = response_obj.examples[0]
+        elif len(response_obj.examples) > 1:
+            m.response_example = response_obj.examples
+
+    m.responses.append(response_obj)
 
 
 def _parse_schema_definitions(schema):

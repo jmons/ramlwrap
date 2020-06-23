@@ -1,0 +1,32 @@
+#%RAML 0.8
+---
+title: Test RamlWrap API
+description: A series of useful APIs that can be used to test RamlWrap functionality.
+version:  v0.1
+mediaType:  application/json
+baseUri: http://example.com
+
+protocols: [HTTP]
+
+/api:
+  displayName: API root
+  post:
+    body:
+      application/json:
+        schema: !include json/service_request.json
+        example: !include json/service_request_example.json
+    responses:
+        200:
+          description: A nice happy description
+          body:
+            application/json:
+              example: {"reason": "happyDays"}
+              schema: {"schema": "example"}
+        204:
+          description: No response body required
+        422:
+          body:
+            application/json:
+                example: {"reason": "invalidManatee"}
+        500:
+          description: A really unhappy server error.
