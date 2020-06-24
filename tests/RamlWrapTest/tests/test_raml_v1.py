@@ -6,11 +6,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
-from ramlwrap.utils.raml import raml_url_patterns
 from django.test import TestCase, Client
 
-import django
-from distutils.version import StrictVersion
 
 
 def _get_parent_class(method):
