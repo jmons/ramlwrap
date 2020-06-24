@@ -125,10 +125,19 @@ class Method():
     response_examples     = None
     response_description  = None
 
-    responses = []
+    responses = None
+
+    def __init__(self):
+        self.responses = []
 
 
 class Response:
+    content_type = None
+    schema = None
+    schema_original = None
+    examples = None
+    description = None
+    status_code = None
 
     def __init__(self, content_type=None, schema=None, schema_original=None, description=None, status_code=None):
         self.content_type = content_type
