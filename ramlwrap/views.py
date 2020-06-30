@@ -125,10 +125,21 @@ class Method():
     response_examples     = None
     response_description  = None
 
-    responses = []
+    responses = None
+    examples = None
+
+    def __init__(self):
+        self.responses = []
+        self.examples = []
 
 
 class Response:
+    content_type = None
+    schema = None
+    schema_original = None
+    examples = None
+    description = None
+    status_code = None
 
     def __init__(self, content_type=None, schema=None, schema_original=None, description=None, status_code=None):
         self.content_type = content_type
@@ -137,6 +148,15 @@ class Response:
         self.examples = []
         self.description = description
         self.status_code = status_code
+
+
+class Example:
+    title = None
+    body = None
+
+    def __init__(self, title=None, body=None):
+        self.title = title
+        self.body = body
 
 
 def _parse_child(resource, endpoints, item_queue, rootnode=False):
@@ -219,10 +239,15 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
                 # Request example
                 if "example" in method_data['body'][m.request_content_type]:
                     m.request_example = method_data['body'][m.request_content_type]['example']
+                    m.examples.append(Example(body=method_data['body'][m.request_content_type]['example']))
 
                 # Request examples
                 if "examples" in method_data['body'][m.request_content_type]:
                     m.request_examples = method_data['body'][m.request_content_type]['examples']
+                    # New examples object
+                    for example in method_data['body'][m.request_content_type]['examples']:
+                        m.examples.append(
+                            Example(title=example, body=method_data['body'][m.request_content_type]['examples'][example]))
 
             # Response
             if 'responses' in method_data and method_data['responses']:
@@ -247,9 +272,17 @@ def _parse_response(m, method_data, status_code):
                     response_obj.schema = _parse_schema_definitions(
                         copy.deepcopy(response_obj.schema_original))
                 if "example" in response['body'][response_obj.content_type]:
-                    response_obj.examples.append(response['body'][response_obj.content_type]['example'])
+                    response_obj.examples.append(Example(body=response['body'][response_obj.content_type]['example']))
+                    # For backward compatability
+                    if status_code == 200:
+                        m.response_example = response['body'][response_obj.content_type]['example']
                 if "examples" in response['body'][response_obj.content_type]:
-                    response_obj.examples.extend(response['body'][response_obj.content_type]['examples'])
+                    for example in response['body'][response_obj.content_type]['examples']:
+                        response_obj.examples.append(
+                            Example(title=example, body=response['body'][response_obj.content_type]['examples'][example]))
+                    # For backward compatability
+                    if status_code == 200:
+                        m.response_example = response['body'][response_obj.content_type]['examples']
 
     # For backward compatability, store 200 responses in specific fields
     if status_code == 200:
@@ -257,10 +290,6 @@ def _parse_response(m, method_data, status_code):
         m.response_description = response_obj.description
         m.response_schema_original = response_obj.schema_original
         m.response_schema = response_obj.schema
-        if len(response_obj.examples) == 1:
-            m.response_example = response_obj.examples[0]
-        elif len(response_obj.examples) > 1:
-            m.response_example = response_obj.examples
 
     m.responses.append(response_obj)
 

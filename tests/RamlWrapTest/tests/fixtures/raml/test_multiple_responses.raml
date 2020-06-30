@@ -10,23 +10,35 @@ protocols: [HTTP]
 
 /api:
   displayName: API root
-  post:
-    body:
-      application/json:
-        schema: !include json/service_request.json
-        example: !include json/service_request_example.json
-    responses:
-        200:
-          description: A nice happy description
-          body:
-            application/json:
-              example: {"reason": "happyDays"}
-              schema: {"schema": "example"}
-        204:
-          description: No response body required
-        422:
-          body:
-            application/json:
-                example: {"reason": "invalidManatee"}
-        500:
-          description: A really unhappy server error.
+  /first:
+    displayName: First endpoint
+    post:
+      body:
+        application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+      responses:
+          200:
+            description: A nice happy description
+            body:
+              application/json:
+                example: {"reason": "happyDays"}
+                schema: {"schema": "example"}
+          204:
+            description: No response body required
+          422:
+            body:
+              application/json:
+                  example: {"reason": "invalidManatee"}
+          500:
+            description: A really unhappy server error.
+  /second:
+    displayName: Second endpoint
+    get:
+      body:
+        application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+      responses:
+          204:
+            description: No response body required
