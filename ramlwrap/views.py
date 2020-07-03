@@ -75,7 +75,7 @@ class RamlDoc(View):
         }
 
         # Root attributes
-        for tag in ["title", "description", "version", "mediaType"]:
+        for tag in ["title", "description", "version", "mediaType", "baseUri"]:
             if tag in loaded_yaml:
                 context[tag] = loaded_yaml[tag]
             else:
