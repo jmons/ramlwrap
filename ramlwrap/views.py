@@ -165,10 +165,10 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
     # main ramlwrap usage, although consider a refactor to merge these two into
     # the same. (i.e. the other one takes a function map, where as this doesn't)
 
-    node  = resource['node']
-    path  = resource['path']
+    node = resource['node']
+    path = resource['path']
 
-    if(rootnode):
+    if rootnode:
         level = -2
     else:
         level = resource['level']
@@ -180,9 +180,9 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
     for key in node:
         if key.startswith("/"):
             item = {
-                "node"  : node[key],
-                "path"  : "%s%s" % (path, key),
-                "level" : level + 1
+                "node": node[key],
+                "path": "%s%s" % (path, key),
+                "level": level + 1
             }
             child_item_array.insert(0, item)
 
@@ -194,7 +194,7 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
         return
 
     # Skip empty nodes
-    if not "displayName" in node:
+    if "displayName" not in node:
         return
 
     # Parse endpoint data
@@ -256,35 +256,37 @@ def _parse_child(resource, endpoints, item_queue, rootnode=False):
 
 
 def _parse_response(m, method_data, status_code):
-    response = method_data['responses'][status_code]
     response_obj = Response(status_code=status_code)
 
-    for response_attr in response:
-        if response_attr == "description":
-            response_obj.description = response['description']
-        elif response_attr == "body":
-            # not sure if this can fail and be valid raml?
-            response_obj.content_type = next(iter(response['body']))
-            if response['body'][response_obj.content_type]:
-                if "schema" in response['body'][response_obj.content_type]:
-                    response_obj.schema_original = response['body'][response_obj.content_type][
-                        'schema']
-                    response_obj.schema = _parse_schema_definitions(
-                        copy.deepcopy(response_obj.schema_original))
-                if "example" in response['body'][response_obj.content_type]:
-                    response_obj.examples.append(Example(body=response['body'][response_obj.content_type]['example']))
-                    # For backward compatability
-                    if status_code == 200:
-                        m.response_example = response['body'][response_obj.content_type]['example']
-                if "examples" in response['body'][response_obj.content_type]:
-                    for example in response['body'][response_obj.content_type]['examples']:
-                        response_obj.examples.append(
-                            Example(title=example, body=response['body'][response_obj.content_type]['examples'][example]))
-                    # For backward compatability
-                    if status_code == 200:
-                        m.response_example = response['body'][response_obj.content_type]['examples']
+    response = method_data['responses'][status_code]
 
-    # For backward compatability, store 200 responses in specific fields
+    if response:
+        for response_attr in response:
+            if response_attr == "description":
+                response_obj.description = response['description']
+            elif response_attr == "body":
+                # not sure if this can fail and be valid raml?
+                response_obj.content_type = next(iter(response['body']))
+                if response['body'][response_obj.content_type]:
+                    if "schema" in response['body'][response_obj.content_type]:
+                        response_obj.schema_original = response['body'][response_obj.content_type][
+                            'schema']
+                        response_obj.schema = _parse_schema_definitions(
+                            copy.deepcopy(response_obj.schema_original))
+                    if "example" in response['body'][response_obj.content_type]:
+                        response_obj.examples.append(Example(body=response['body'][response_obj.content_type]['example']))
+                        # For backward compatibility
+                        if status_code == 200:
+                            m.response_example = response['body'][response_obj.content_type]['example']
+                    if "examples" in response['body'][response_obj.content_type]:
+                        for example in response['body'][response_obj.content_type]['examples']:
+                            response_obj.examples.append(
+                                Example(title=example, body=response['body'][response_obj.content_type]['examples'][example]))
+                        # For backward compatibility
+                        if status_code == 200:
+                            m.response_example = response['body'][response_obj.content_type]['examples']
+
+    # For backward compatibility, store 200 responses in specific fields
     if status_code == 200:
         m.response_content_type = response_obj.content_type
         m.response_description = response_obj.description
@@ -317,9 +319,9 @@ def _parse_properties_definitions(properties, definitions):
     for key in properties:
 
         # If a property has a $ref definition reference, replace it with the definition
-        if("$ref" in properties[key]):
+        if "$ref" in properties[key]:
             definition = properties[key]['$ref'].replace("#/definitions/", "")
-            if(definition in definitions):
+            if definition in definitions:
                 properties[key] = definitions[definition]
 
         elif "type" in properties[key]:
@@ -331,7 +333,7 @@ def _parse_properties_definitions(properties, definitions):
             # If the property is an array with a $ref definition reference, replace it with the definition
             elif properties[key]['type'] == "array" and "items" in properties[key] and "$ref" in properties[key]['items']:
                 definition = properties[key]['items']['$ref'].replace("#/definitions/", "")
-                if(definition in definitions):
+                if definition in definitions:
                     properties[key]['items'] = definitions[definition]
 
     return properties
