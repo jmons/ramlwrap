@@ -18,7 +18,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='2.3.3',
+    version='2.3.4',
 
     description='Raml API mapping toolkit for Django',
     long_description=long_description,
