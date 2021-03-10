@@ -223,8 +223,13 @@ def _validate_body(request, action):
             # Otherwise just load it (no validation as no schema).
             data = json.loads(request.body.decode('utf-8'))
     else:
-        # The content isn't JSON to just decode it as is.
-        data = request.body.decode('utf-8')
+        # The content isn't JSON
+        try:
+            # Decode it as it is
+            data = request.body.decode('utf-8')
+        except UnicodeDecodeError as e:
+            # Just send the body if it cannot be decoded
+            data = request.body
 
     if not error_response:
         request.validated_data = data
