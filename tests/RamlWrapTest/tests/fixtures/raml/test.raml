@@ -130,3 +130,17 @@ protocols: [HTTP]
           body:
             application/json:
                 example: {"exampleData": "You just made a DELETE request"}
+  /multi_content_type:
+    displayName: API for testing multiple content types
+    description: Example POST API
+    post:
+      body:
+        application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+        application/x-www-form-urlencoded:
+      responses:
+        200:
+          body:
+            application/json:
+                 example: {"exampleData": "You just made a POST request"}

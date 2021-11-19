@@ -40,7 +40,10 @@ function_map = {
     'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
     'notdynamic': {'function': regular_api},
-    'notdynamic_old': regular_api
+    'notdynamic_old': regular_api,
+
+    # url with multiple content-types
+    'multi_content_type': {'function': regular_api}
 }
 
 # Load in test raml file

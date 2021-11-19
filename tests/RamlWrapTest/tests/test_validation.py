@@ -112,6 +112,34 @@ class ValidationTestCase(TestCase):
             with self.assertRaises(ValidationError):
                 self.client.get("/api/3?%s" % params)
 
+    def test_post_with_valid_content_types(self):
+        # List of valid content types, as defined in the raml file
+        valid_content_types = [
+            "application/json",
+            "application/x-www-form-urlencoded"
+        ]
+
+        request_data = {"data":"value"}
+
+        for content_type in valid_content_types:
+            headers = {"content-type": content_type}
+            response = self.client.post('/api/multi_content_type', json.dumps(request_data), headers=headers)
+            self.assertEquals(response.status_code, 200)
+
+    def test_post_with_invalid_content_types(self):
+        # List of valid content types, but which aren't defined in the raml file
+        valid_content_types = [
+            "text/plain",
+            "application/xml"
+        ]
+
+        request_data = {"data":"value"}
+
+        for content_type in valid_content_types:
+            headers = {"content-type": content_type}
+            response = self.client.post('/api/multi_content_type', json.dumps(request_data), headers=headers)
+            self.assertEquals(response.status_code, 500)
+
     def test_validation_handler(self):
         """
         Test that given a custom validation handler path, it is called.
