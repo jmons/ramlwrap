@@ -147,9 +147,9 @@ def _generate_example(action):
     This is used by both GET and POST when returning an example 
     """
     # The original method of generating straight from the example is bad
-    # because v2 parser now has an object, which also allows us to do the 
+    # because v2 parser now has an object, which also allows us to do the
     # headers correctly
-    
+
     ret_data = action.example
     # FIXME: not sure about this content thing
     if action.resp_content_type == "application/json":
@@ -205,31 +205,64 @@ def _validate_api(request, action, dynamic_values=None):
 def _validate_body(request, action):
     error_response = None
 
-    if action.requ_content_type == ContentType.JSON:
-        # If the expected request body is JSON, we need to load it.
-        if action.schema:
-            # If there is any schema, we'll validate it.
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-                validate(data, action.schema)
-            except Exception as e:
-                # Check the value is in settings, and that it is not None
-                if hasattr(settings,
-                           'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
-                    error_response = _call_custom_handler(e, request, action)
-                else:
-                    error_response = _validation_error_handler(e)
-        else:
-            # Otherwise just load it (no validation as no schema).
-            data = json.loads(request.body.decode('utf-8'))
+    # Grab the content-type coming in from the request
+    if "headers" in request.META:
+        request_content_type = request.META["headers"]["content-type"]
+
     else:
-        # The content isn't JSON
+        request_content_type = request.META["CONTENT_TYPE"]
+
+    content_type_matched = False
+
+    # Set the actual content_type we are using in this request
+    action.requ_content_type = request_content_type
+
+    # Check the schema had content-types defined
+    if hasattr(action, 'request_content_type_options'):
+        for x in action.request_content_type_options:
+            # Check if the incoming content-type matches the allowed type in the schema and is JSON type
+            if x == request_content_type == str(ContentType.JSON):
+                content_type_matched = True
+
+                # If the expected request body is JSON, we need to load it.
+                if action.request_options[request_content_type]["schema"]:
+                    # If there is any schema, we'll validate it.
+                    try:
+                        data = json.loads(request.body.decode('utf-8'))
+                        validate(data, action.request_options[request_content_type]["schema"])
+                    except Exception as e:
+                        # Check the value is in settings, and that it is not None
+                        if hasattr(settings,
+                                   'RAMLWRAP_VALIDATION_ERROR_HANDLER') and settings.RAMLWRAP_VALIDATION_ERROR_HANDLER:
+                            error_response = _call_custom_handler(e, request, action)
+                        else:
+                            error_response = _validation_error_handler(e)
+                else:
+                    # Otherwise just load it (no validation as no schema).
+                    data = json.loads(request.body.decode('utf-8'))
+                break
+
+            # Incoming content type wasn't json but it does match one of the options in the raml so just decode it as is
+            elif x == request_content_type:
+                content_type_matched = True
+                try:
+                    data = request.body.decode('utf-8')
+                except UnicodeDecodeError:
+                    # Just send the body if it cannot be decoded
+                    data = request.body
+                break
+
+    else:
+        # There were no content type options in the schema so just load the data
+        content_type_matched = True
         try:
-            # Decode it as it is
             data = request.body.decode('utf-8')
-        except UnicodeDecodeError as e:
+        except UnicodeDecodeError:
             # Just send the body if it cannot be decoded
             data = request.body
+
+    if not content_type_matched:
+        error_response = _validation_error_handler(ValidationError("Invalid Content Type for this request: {}".format(request_content_type), validator="invalid"))
 
     if not error_response:
         request.validated_data = data

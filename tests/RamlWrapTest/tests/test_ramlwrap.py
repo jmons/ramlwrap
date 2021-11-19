@@ -100,6 +100,8 @@ class RamlWrapTestCase(TestCase):
             "api/5": {"PUT": {}},
             "api/patch-api": {"PATCH": {}},
             "api/delete-api": {"DELETE": {}},
+            "api/multi_content_type": {"POST": {}},
+            "api/no_content_type": {"POST": {}},
         }
 
         for pattern in patterns:
