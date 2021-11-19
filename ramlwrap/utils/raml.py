@@ -108,10 +108,20 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                 if 'body' in act:
                     # if body, look for content type : if not there maybe not valid raml?
                     # FIXME: this may be a bug requring a try/catch - need more real world example ramls
-                    a.requ_content_type = next(iter(act['body']))
-                    # Also look for a schema here
-                    if "schema" in act['body'][a.requ_content_type]:
-                        a.schema = act['body'][a.requ_content_type]['schema']
+                    request_options = {}
+                    request_content_type_options = []
+                    for i in act["body"].items():
+                        if "schema" in i:
+                            request_options[i[0]] = {"schema": i[1]["schema"]}
+
+                        else:
+                            request_options[i[0]] = {"schema": None}
+
+                        request_content_type_options.append(i[0])
+
+                    a.request_options = request_options
+                    a.request_content_type_options = request_content_type_options
+
 
                 # These horrendous if blocks are to get around none type errors when the tree
                 # is not fully built out.
@@ -119,7 +129,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                 if 'responses' in act and act['responses']:
                     for status_code in act['responses']:
                         # this is a response that we care about:
-                        
+
                         if status_code == 200:
                             two_hundred = act['responses'][200]
                             for resp_attr in two_hundred:
@@ -135,7 +145,7 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                                             examples = two_hundred['body'][a.resp_content_type]['examples'].values()
                                             value_iterator = iter(examples)
                                             a.example = next(value_iterator)
-                                        
+
                 if "queryParameters" in act and act["queryParameters"]:
                     # FIXME: does this help in the query parameterising?
                     # For filling out a.queryparameterchecks
