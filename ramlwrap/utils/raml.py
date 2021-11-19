@@ -106,18 +106,18 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                         logger.error("Url: [%s] appears to have a dynamic component but there is no function map for it. You must define the regex in the function map to prevent errors" % path)
 
                 if 'body' in act:
-                    # if body, look for content type : if not there maybe not valid raml?
+                    # if body, look for content type
                     # FIXME: this may be a bug requring a try/catch - need more real world example ramls
                     request_options = {}
                     request_content_type_options = []
+                    # For each body defined in the raml, store the content type and schema if present
                     for i in act["body"].items():
+                        request_content_type_options.append(i[0])
                         if "schema" in i:
                             request_options[i[0]] = {"schema": i[1]["schema"]}
 
                         else:
                             request_options[i[0]] = {"schema": None}
-
-                        request_content_type_options.append(i[0])
 
                     a.request_options = request_options
                     a.request_content_type_options = request_content_type_options
