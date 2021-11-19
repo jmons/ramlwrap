@@ -241,14 +241,21 @@ def _validate_body(request, action):
             # Incoming content type wasn't json but it does match one of the options in the raml so just decode it as is
             elif x == request_content_type:
                 content_type_matched = True
-                data = request.body.decode('utf-8')
+                try:
+                    data = request.body.decode('utf-8')
+                except UnicodeDecodeError:
+                    # Just send the body if it cannot be decoded
+                    data = request.body
                 break
 
     else:
         # There were no content type options in the schema so just load the data
         content_type_matched = True
-        data = request.body.decode('utf-8')
-
+        try:
+            data = request.body.decode('utf-8')
+        except UnicodeDecodeError:
+            # Just send the body if it cannot be decoded
+            data = request.body
 
     if not content_type_matched:
         error_response = _validation_error_handler(ValidationError("Invalid Content Type for this request: {}".format(request_content_type), validator="invalid"))
