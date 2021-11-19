@@ -147,7 +147,7 @@ def _generate_example(action):
     This is used by both GET and POST when returning an example 
     """
     # The original method of generating straight from the example is bad
-    # because v2 parser now has an object, which also allows us to do the 
+    # because v2 parser now has an object, which also allows us to do the
     # headers correctly
 
     ret_data = action.example
@@ -214,18 +214,22 @@ def _validate_body(request, action):
 
     content_type_matched = False
 
+    # Set the actual content_type we are using in this request
+    action.requ_content_type = request_content_type
+
     # Check the schema had content-types defined
     if hasattr(action, 'request_content_type_options'):
         for x in action.request_content_type_options:
             # Check if the incoming content-type matches the allowed type in the schema and is JSON type
             if x == request_content_type == str(ContentType.JSON):
                 content_type_matched = True
+
                 # If the expected request body is JSON, we need to load it.
-                if action.schema:
+                if action.request_options[request_content_type]["schema"]:
                     # If there is any schema, we'll validate it.
                     try:
                         data = json.loads(request.body.decode('utf-8'))
-                        validate(data, action.schema)
+                        validate(data, action.request_options[request_content_type]["schema"])
                     except Exception as e:
                         # Check the value is in settings, and that it is not None
                         if hasattr(settings,

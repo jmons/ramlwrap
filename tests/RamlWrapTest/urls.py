@@ -43,7 +43,9 @@ function_map = {
     'notdynamic_old': regular_api,
 
     # url with multiple content-types
-    'multi_content_type': {'function': regular_api}
+    'api/multi_content_type': {'function': regular_api},
+    'api/no_content_type': {'function': regular_api},
+
 }
 
 # Load in test raml file

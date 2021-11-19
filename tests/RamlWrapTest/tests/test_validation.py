@@ -113,32 +113,50 @@ class ValidationTestCase(TestCase):
                 self.client.get("/api/3?%s" % params)
 
     def test_post_with_valid_content_types(self):
-        # List of valid content types, as defined in the raml file
+        """
+        Check that all content types defined in the raml file are valid
+        """
+
         valid_content_types = [
             "application/json",
             "application/x-www-form-urlencoded"
         ]
 
-        request_data = {"data":"value"}
-
         for content_type in valid_content_types:
-            headers = {"content-type": content_type}
-            response = self.client.post('/api/multi_content_type', json.dumps(request_data), headers=headers)
+            response = self.client.post('/api/multi_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 200)
 
     def test_post_with_invalid_content_types(self):
-        # List of valid content types, but which aren't defined in the raml file
+        """
+        Check that making a request with a content type which doesn't match the one in the schema, fails
+        """
+
         valid_content_types = [
             "text/plain",
             "application/xml"
         ]
 
-        request_data = {"data":"value"}
-
         for content_type in valid_content_types:
-            headers = {"content-type": content_type}
-            response = self.client.post('/api/multi_content_type', json.dumps(request_data), headers=headers)
-            self.assertEquals(response.status_code, 500)
+            response = self.client.post('/api/multi_content_type', data="{}", content_type=content_type)
+            self.assertEquals(response.status_code, 422)
+
+    def test_post_with_no_content_types(self):
+        """
+        Check that making a request with a content type
+        but to a url which has no defined content types in the schema, passes
+        """
+
+        # Raml file doesn't define content types, so content type validation doesn't occur
+        content_types = [
+            "application/json",
+            "application/x-www-form-urlencoded",
+            "text/plain",
+            "application/xml"
+        ]
+
+        for content_type in content_types:
+            response = self.client.post('/api/no_content_type', data="{}", content_type=content_type)
+            self.assertEquals(response.status_code, 200)
 
     def test_validation_handler(self):
         """
@@ -177,11 +195,13 @@ class ValidationTestCase(TestCase):
         response = self.client.post(endpoint, data="{}", content_type="application/json")
 
         self.assertEquals(200, response.status_code)
+
         expected_json_body = {
             "path": endpoint,
             "content_type": "application/json"
 
         }
+
         self.assertEqual(json.loads(response.content.decode("utf-8")), expected_json_body)
 
     def test_no_schema_validation_passes_through(self):

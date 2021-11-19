@@ -113,11 +113,11 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                     # For each body defined in the raml, store the content type and schema if present
                     for i in act["body"].items():
                         request_content_type_options.append(i[0])
-                        if "schema" in i:
-                            request_options[i[0]] = {"schema": i[1]["schema"]}
+                        request_options[i[0]] = {"schema": None}
 
-                        else:
-                            request_options[i[0]] = {"schema": None}
+                        if len(i) > 1 and i[1]:
+                            if "schema" in i[1]:
+                                request_options[i[0]] = {"schema": i[1]["schema"]}
 
                     a.request_options = request_options
                     a.request_content_type_options = request_content_type_options
@@ -129,7 +129,6 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
                 if 'responses' in act and act['responses']:
                     for status_code in act['responses']:
                         # this is a response that we care about:
-
                         if status_code == 200:
                             two_hundred = act['responses'][200]
                             for resp_attr in two_hundred:
