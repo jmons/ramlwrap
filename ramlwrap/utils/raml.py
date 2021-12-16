@@ -1,7 +1,7 @@
 import logging
 import yaml
 
-from django.conf.urls import url
+from django.urls import re_path
 
 from .yaml_include_loader import Loader
 from .validation import Endpoint, Action
@@ -159,4 +159,4 @@ def _parse_child(resource, patterns, to_look_at, function_map, defaults):
         else:
             url_to_use = local_endpoint.url
 
-        patterns.append(url("^%s$" % url_to_use, local_endpoint.serve))
+        patterns.append(re_path("^%s$" % url_to_use, local_endpoint.serve))

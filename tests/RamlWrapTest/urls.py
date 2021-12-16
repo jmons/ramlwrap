@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.urls import re_path
 from django.contrib import admin
 
 from ramlwrap import ramlwrap
@@ -24,8 +24,8 @@ from ramlwrap.views import RamlDoc
 #x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", template="ramlwrap_default_main.html")
 x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml")
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^docs/$', x.get),
+    re_path(r'^admin/', admin.site.urls),
+    re_path(r'^docs/$', x.get),
 ]
 
 function_map = {
