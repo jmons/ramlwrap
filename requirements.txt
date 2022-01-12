@@ -1,5 +1,13 @@
-Django>=1.11.0
+# This is the development version of requirements
+
+Django>=2.0
+
+jsonschema>=2.6.0
+
+# FIXME: fix version? Minimum?
+openapi_parser 
+
+
+# Consider mock minm usage
 mock==1.3.0
-jsonschema==2.6.0
-pyyaml==5.4
 

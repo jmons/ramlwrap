@@ -9,42 +9,71 @@ Raml Wrap (also known as the Raml Rap)
     'Cause if you want to ride like a camel,
     you need to get some RAML!
 
-    To all my homies who made this happen
-    Jamie, Natalie and the Bees
-    Ron managing us with Tim's a rappin'
-    you aint got nothing on old - JAY TEEEeeeeee(ssss)
+Or (cough) as of v3, open api spec.
 
-This file is the prototype Raml Wrap. Its going to have a license when we pick one,
-until then, let JT know how much you love it, so he bothers to release it properly.
-
-Tweet him @jmons, and leave this message in. Feel free to extend the Rap. Perhaps
-sing it and put it on youtube...
+As of March 2017, RamlWrap has been MIT license, see LICENSE 
 """
 import logging
 
-from . utils.raml import raml_url_patterns
+from . utils.validation import Endpoint, Action
 from . utils.exceptions import FatalException
 
+from openapi_parser.parser.loader import OpenApiParser
+from openapi_parser.parser import OpenApiLoaderError
+
+from django.urls import re_path
 
 logger = logging.getLogger(__name__)
 
 
 def ramlwrap(file_path, function_map):
     """
-    Check if the file is Raml and parse as appropriate.
+    Produce Patterns for a file, mapped to api calls where provided in the function map
+    :param file_path: the path to the apo spec file (not a file pointer)
+    :param function_map: a dictionary of urls to functions for mapping (see docs)
+    :return: django patterns for appending to the url_patterns
     """
-
+    patterns = []
     try:
-        # Check if file is RAML (.raml)
-        if file_path.endswith(".raml"):
-            patterns = raml_url_patterns(file_path, function_map)
-        else:
-            error_msg = "The file: '{}' does not have a .raml extension!".format(file_path)
-            logger.error(error_msg)
-            raise FatalException(error_msg)
+        parser = OpenApiParser.open(file_path)
+        parser.load_all()
 
-    except AttributeError as error:
-        error_msg = "An error occurred reading '{}': {}".format(file_path, error)
+        for path, item in parser.path_items.items():
+            # the path is 
+            # item.pretty_path
+            # item.summary
+            epoint = Endpoint(item.pretty_path)
+
+            for verb, endpoint in item.endpoints.items():
+                # this now is with the item.pretty_path the GET / POST etc
+                # print(" -> %s \t: %s" % (verb, endpoint.summary))
+                # print(endpoint.schema)
+                my_action = Action()
+                
+                # look for the 200 (?) #FIXME what if 200 isn't default but others like no content
+                if '200' in endpoint.responses:
+                    # FIXME: don't hardcode application/json here!
+                    examples = endpoint.responses['200'].content['application/json'].example
+                    if len(examples) > 0:
+                        for ex in examples:
+                            print(ex.values())
+                            my_action.example = ex
+                            break; #FIXME: wtf?
+                print("adding endpoint %s" % verb)
+                epoint.add_action(verb.upper(), my_action)
+
+            # FIXME: the endpoint parse_regex should be used at this point
+ 
+            if path.startswith("/"):
+                path = path[1:]
+            print("Adding %s " % path)
+            print( "--> %s " % epoint.request_method_mapping)
+            patterns.append(re_path("^%s$" % path, epoint.serve))
+
+    except OpenApiLoaderError as error: 
+        # FIXME: double check this.
+
+        error_msg = "An error occurred processing '{}': {}".format(file_path, error)
         logger.error(error_msg)
         raise FatalException(error_msg)
 

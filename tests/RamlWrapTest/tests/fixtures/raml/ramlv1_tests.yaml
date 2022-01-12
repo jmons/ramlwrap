@@ -8,9 +8,8 @@ baseUri: http://example.com
 
 protocols: [HTTP]
 
-/ramlv1-api:
-  displayName: API root
-  /multi-example:
+
+/ramlv1-api/multi-example:
     displayName: Multiple examples in RAML
     get:
       responses:

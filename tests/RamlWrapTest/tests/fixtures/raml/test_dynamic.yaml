@@ -11,62 +11,62 @@ protocols: [HTTP]
 
 
 /dynamicapi/{dynamic_id}:
-    displayName: Dynamic API
-    description: dynamic get url
+  displayName: Dynamic API
+  description: dynamic get url
+  get:
+    description: This is a thing
+    responses:
+      200:
+        body:
+          application/json:
+              example: {"exampleData": "You just made a dynamic get request!"}
+
+/dynamicapi/{dynamic_id}/api:
+  displayName: Longer dynamic API
+  description: longer dynamic get url
+  post:
+    body:
+      application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+    responses:
+      200:
+        body:
+          application/json:
+              example: {"exampleData": "You just made a dynamic post request!"}
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+              example: {"exampleData": "You just made another dynamic get request!"}
+
+  description: dynamic post url
+
+
+/dynamicapi/{dynamic_id}/api2:
+  displayName: Another dynamic API
+  description: another dynamic post url
+  post:
+    body:
+      application/json:
+          schema: !include json/service_request.json
+          example: !include json/service_request_example.json
+    responses:
+      200:
+        body:
+          application/json:
+              example: {"exampleData": "You just made another dynamic post request!"}
+
+/dynamicapi/{dynamic_id}/{dynamic_id_2}:
+    displayName: One more dynamic API
+    description: Url with multiple dynamic values
     get:
-      description: This is a thing
       responses:
         200:
           body:
             application/json:
-                example: {"exampleData": "You just made a dynamic get request!"}
-
-    /api:
-      displayName: Longer dynamic API
-      description: longer dynamic get url
-      post:
-        body:
-          application/json:
-              schema: !include json/service_request.json
-              example: !include json/service_request_example.json
-        responses:
-          200:
-            body:
-              application/json:
-                  example: {"exampleData": "You just made a dynamic post request!"}
-      get:
-        responses:
-          200:
-            body:
-              application/json:
-                  example: {"exampleData": "You just made another dynamic get request!"}
-
-      description: dynamic post url
-
-
-    /api2:
-      displayName: Another dynamic API
-      description: another dynamic post url
-      post:
-        body:
-          application/json:
-              schema: !include json/service_request.json
-              example: !include json/service_request_example.json
-        responses:
-          200:
-            body:
-              application/json:
-                  example: {"exampleData": "You just made another dynamic post request!"}
-
-    /{dynamic_id_2}:
-        displayName: One more dynamic API
-        description: Url with multiple dynamic values
-        get:
-          responses:
-            200:
-              body:
-                application/json:
-                    example: {"exampleData": "You just made a dynamic get request with 2 dynamic values!"}
+                example: {"exampleData": "You just made a dynamic get request with 2 dynamic values!"}
 
         /api3:
             displayName: Longer API

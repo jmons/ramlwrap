@@ -1,11 +1,13 @@
 # python
 *.pyc
 
-# pycharm
+# ide's
 .idea
+.vscode
 
 # virtualenvironments (for dev)
 venv
+.tox
 
 # local_settings.py (Specifically)
 local_settings.py

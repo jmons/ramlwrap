@@ -73,9 +73,9 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        "Django>=1.11.0",
+        "Django>=2.0",
         "jsonschema>=2.6.0",
-        "pyyaml>=3.12"
+        "openapi_parser"
     ]
 
 )

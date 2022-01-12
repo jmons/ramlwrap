@@ -22,34 +22,35 @@ from ramlwrap.views import noscript
 from ramlwrap.views import RamlDoc
 
 #x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", template="ramlwrap_default_main.html")
-x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml")
+#x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml")
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
-    re_path(r'^docs/$', x.get),
+#    re_path(r'^docs/$', x.get),
 ]
 
 function_map = {
     # Dynamic urls linked to functions with regex for their dynamic values
-    'dynamicapi/{dynamic_id}': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    'dynamicapi/{dynamic_id}/api': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api3': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
-    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api4': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+#    'dynamicapi/{dynamic_id}': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+#    'dynamicapi/{dynamic_id}/api': {'function': dynamic_api_one, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+#    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api3': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+#    'dynamicapi/{dynamic_id}/{dynamic_id_2}/api4': {'function': dynamic_api_two, 'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
     # urls not linked to a function, but it must still have linked regex in order for example data to be returned
-    'dynamicapi/{dynamic_id}/api2': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
-    'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
+#    'dynamicapi/{dynamic_id}/api2': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)'}},
+#    'dynamicapi/{dynamic_id}/{dynamic_id_2}': {'regex': {'dynamic_id': '(?P<dynamic_id>[a-zA-Z]+)', 'dynamic_id_2': '(?P<dynamic_id_2>[0-9]+)'}},
 
-    'notdynamic': {'function': regular_api},
-    'notdynamic_old': regular_api,
+ #   'notdynamic': {'function': regular_api},
+ #   'notdynamic_old': regular_api,
 
     # url with multiple content-types
-    'api/multi_content_type': {'function': regular_api},
-    'api/no_content_type': {'function': regular_api},
+ #   'api/multi_content_type': {'function': regular_api},
+ #   'api/no_content_type': {'function': regular_api},
 
 }
 
 # Load in test raml file
-urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test.raml", function_map))
-urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", function_map))
-urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/ramlv1_tests.raml", function_map))
+urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test.yaml", function_map))
+#urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", function_map))
+#urlpatterns.extend(ramlwrap("RamlWrapTest/tests/fixtures/raml/ramlv1_tests.raml", function_map))
 
+print(urlpatterns)
