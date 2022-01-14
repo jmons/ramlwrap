@@ -13,46 +13,218 @@ paths:
     summary: API root
     get:
       #requestBody:
-        #content:
-         # application/json:
-            #schema: 
-            #$ref: 'json/service_request.json'
-            #example: 
-            #  $ref: 'json/service_request_example.json'
+      #content:
+      # application/json:
+      #schema:
+      #$ref: 'json/service_request.json'
+      #example:
+      #  $ref: 'json/service_request_example.json'
       responses:
-          200:
-            description: "thing"
-            content:
-                "application/json":
-                  schema:
-                    $ref: 'json/service_request.json'
-                  example: 
-                    default:
-                      $ref: 'json/service_request_example.json'
-                      #value: { "hi":"thing"}
-                      #$ref: "#json/service_request_example.json"
-                      #$ref: "#json/service_request_example.json"
-                    #- {"nope": "fixme"}
-                    
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                {
+                  "title": "test ",
+                  "description": "test",
+                  "type": "object",
+                  "required": [
+                      "device"
+                  ],
+                  "properties": {
+                    "device": {
+                      "description": "info",
+                      "type": "object",
+                      "required": [
+                          "type"
+                      ],
+                      "properties": {
+                        "type": {
+                          "description": "Type of device",
+                          "enum": [
+                              "IOS",
+                              "ANDROID"
+                          ]
+                        },
+                        "id": {
+                          "description": "id",
+                          "type": "string"
+                        },
+                        "osVersion": {
+                          "description": "os version",
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "version": {
+                      "description": "version",
+                      "type": "string"
+                    }
+                  }
+                }
+              example:
+                {
+                  "device": {
+                    "type": "IOS",
+                    "id": "123",
+                    "osVersion": "15"
+                  },
+                  "version": "1"
+                }
+
+        500:
+          description: A really unhappy server error.
+  /api2:
+    summary: API root
+    get:
+      #requestBody:
+      #content:
+      # application/json:
+      #schema:
+      #$ref: 'json/service_request.json'
+      #example:
+      #  $ref: 'json/service_request_example.json'
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                title: 'test '
+                description: test
+                type: object
+                required:
+                  - device
+                properties:
+                  device:
+                    description: info
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        description: Type of device
+                        enum:
+                          - IOS
+                          - ANDROID
+                      id:
+                        description: id
+                        type: string
+                      osVersion:
+                        description: os version
+                        type: string
+                  version:
+                    description: version
+                    type: string
+              example:
+                {
+                  "device": {
+                    "type": "IOS",
+                    "id": "123",
+                    "osVersion": "15"
+                  },
+                  "version": "1"
+                }
+
+        500:
+          description: A really unhappy server error.
+  /api3/no/example:
+    summary: API root
+    get:
+      #requestBody:
+      #content:
+      # application/json:
+      #schema:
+      #$ref: 'json/service_request.json'
+      #example:
+      #  $ref: 'json/service_request_example.json'
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                title: 'test '
+                description: test
+                type: object
+                required:
+                  - device
+                properties:
+                  device:
+                    description: info
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        description: Type of device
+                        enum:
+                          - IOS
+                          - ANDROID
+                      id:
+                        description: id
+                        type: string
+                      osVersion:
+                        description: os version
+                        type: string
+                  version:
+                    description: version
+                    type: string
+
+        500:
+          description: A really unhappy server error.
+  /api4error:
+    summary: API root
+    get:
+      #requestBody:
+      #content:
+      # application/json:
+      #schema:
+      #$ref: 'json/service_request.json'
+      #example:
+      #  $ref: 'json/service_request_example.json'
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+            schema:
+            description: Error response
+            type: object
+            required:
+              - reason
+            properties:
+              errorDescription:
+                type: string
+              reason:
+                type: string
+          example:
+            {
+              "reason": "jsonValidationError",
+              "errorDescription": "Error occurred loading json or during json validation."
+            }
+        required: true
+
           500:
             description: A really unhappy server error.
 
 something:
- $ref: "file/"
-# /api/1:
-#   displayName: API 1
-#   description: Example API with a post request.
-#   post:
-#     body:
-#       application/json:
-#         schema: !include json/service_request.json
-#         example: !include json/service_request_example.json
-#     responses:
-#       200:
-#         body:
-#           application/json:
+  $ref: "file/"
+    # /api/1:
+    #   displayName: API 1
+    #   description: Example API with a post request.
+    #   post:
+    #     body:
+    #       application/json:
+    #         schema: !include json/service_request.json
+    #         example: !include json/service_request_example.json
+    #     responses:
+    #       200:
+    #         body:
+    #           application/json:
 
-      
+
 
 # /api/1/1.1:
 #   displayName: API 1.1
