@@ -53,6 +53,7 @@ def ramlwrap(file_path, function_map):
                 # look for the 200 (?) #FIXME what if 200 isn't default but others like no content
                 if '200' in endpoint.responses:
                     # FIXME: don't hardcode application/json here!
+                    my_action.schema = endpoint.responses['200'].content['application/json'].schema
                     examples = endpoint.responses['200'].content['application/json'].example
                     if len(examples) > 0:
                         for ex in examples:
@@ -60,10 +61,13 @@ def ramlwrap(file_path, function_map):
                             my_action.example = ex
                             break; #FIXME: wtf?
                 print("adding endpoint %s" % verb)
+
+
                 epoint.add_action(verb.upper(), my_action)
 
                 if '204' in endpoint.responses:
                     # FIXME: don't hardcode application/json here!
+                    my_action.schema = endpoint.responses['204'].content['application/json'].schema
                     examples = endpoint.responses['204'].content['application/json'].example
                     if len(examples) > 0:
                         for ex in examples:
