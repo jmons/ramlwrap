@@ -43,17 +43,28 @@ def ramlwrap(file_path, function_map):
             # item.pretty_path
             # item.summary
             epoint = Endpoint(item.pretty_path)
-
+            print('>>>>>',item.endpoints.items())
             for verb, endpoint in item.endpoints.items():
                 # this now is with the item.pretty_path the GET / POST etc
                 # print(" -> %s \t: %s" % (verb, endpoint.summary))
                 # print(endpoint.schema)
                 my_action = Action()
-                
+                print(endpoint.responses)
                 # look for the 200 (?) #FIXME what if 200 isn't default but others like no content
                 if '200' in endpoint.responses:
                     # FIXME: don't hardcode application/json here!
                     examples = endpoint.responses['200'].content['application/json'].example
+                    if len(examples) > 0:
+                        for ex in examples:
+                            print(ex.values())
+                            my_action.example = ex
+                            break; #FIXME: wtf?
+                print("adding endpoint %s" % verb)
+                epoint.add_action(verb.upper(), my_action)
+
+                if '204' in endpoint.responses:
+                    # FIXME: don't hardcode application/json here!
+                    examples = endpoint.responses['204'].content['application/json'].example
                     if len(examples) > 0:
                         for ex in examples:
                             print(ex.values())

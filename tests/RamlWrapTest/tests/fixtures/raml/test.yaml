@@ -12,13 +12,6 @@ paths:
   /api:
     summary: API root
     get:
-      #requestBody:
-      #content:
-      # application/json:
-      #schema:
-      #$ref: 'json/service_request.json'
-      #example:
-      #  $ref: 'json/service_request_example.json'
       responses:
         200:
           description: "thing"
@@ -77,7 +70,7 @@ paths:
           description: A really unhappy server error.
   /api2:
     summary: API root
-    get:
+    put:
       #requestBody:
       #content:
       # application/json:
@@ -86,7 +79,7 @@ paths:
       #example:
       #  $ref: 'json/service_request_example.json'
       responses:
-        200:
+        204:
           description: "thing"
           content:
             "application/json":
@@ -108,106 +101,103 @@ paths:
                         enum:
                           - IOS
                           - ANDROID
-                      id:
+                      deviceid:
                         description: id
                         type: string
                       osVersion:
                         description: os version
                         type: string
-                  version:
-                    description: version
+                  type:
+                    description: type
                     type: string
               example:
                 {
                   "device": {
                     "type": "IOS",
-                    "id": "123",
+                    "deviceid": "123",
                     "osVersion": "15"
                   },
-                  "version": "1"
+                  "type": "1"
                 }
 
-        500:
-          description: A really unhappy server error.
-  /api3/no/example:
-    summary: API root
-    get:
-      #requestBody:
-      #content:
-      # application/json:
-      #schema:
-      #$ref: 'json/service_request.json'
-      #example:
-      #  $ref: 'json/service_request_example.json'
-      responses:
-        200:
-          description: "thing"
-          content:
-            "application/json":
-              schema:
-                title: 'test '
-                description: test
-                type: object
-                required:
-                  - device
-                properties:
-                  device:
-                    description: info
-                    type: object
-                    required:
-                      - type
-                    properties:
-                      type:
-                        description: Type of device
-                        enum:
-                          - IOS
-                          - ANDROID
-                      id:
-                        description: id
-                        type: string
-                      osVersion:
-                        description: os version
-                        type: string
-                  version:
-                    description: version
-                    type: string
-
-        500:
-          description: A really unhappy server error.
-  /api4error:
-    summary: API root
-    get:
-      #requestBody:
-      #content:
-      # application/json:
-      #schema:
-      #$ref: 'json/service_request.json'
-      #example:
-      #  $ref: 'json/service_request_example.json'
-      responses:
-        200:
-          description: "thing"
-          content:
-            "application/json":
-            schema:
-            description: Error response
-            type: object
-            required:
-              - reason
-            properties:
-              errorDescription:
-                type: string
-              reason:
-                type: string
-          example:
-            {
-              "reason": "jsonValidationError",
-              "errorDescription": "Error occurred loading json or during json validation."
-            }
-        required: true
-
-          500:
-            description: A really unhappy server error.
+        422:
+          description: A really unhappy post server error.
+#  /api3/no/example:
+#    summary: API root
+#    get:
+#      #requestBody:
+#      #content:
+#      # application/json:
+#      #schema:
+#      #$ref: 'json/service_request.json'
+#      #example:
+#      #  $ref: 'json/service_request_example.json'
+#      responses:
+#        200:
+#          description: "thing"
+#          content:
+#            "application/json":
+#              schema:
+#                title: 'test '
+#                description: test
+#                type: object
+#                required:
+#                  - device
+#                properties:
+#                  device:
+#                    description: info
+#                    type: object
+#                    required:
+#                      - type
+#                    properties:
+#                      type:
+#                        description: Type of device
+#                        enum:
+#                          - IOS
+#                          - ANDROID
+#                      id:
+#                        description: id
+#                        type: string
+#                      osVersion:
+#                        description: os version
+#                        type: string
+#                  version:
+#                    description: version
+#                    type: string
+#
+#        500:
+#          description: A really unhappy server error.
+#  /api4error:
+#    summary: API root
+#    get:
+#      #requestBody:
+#      #content:
+#      # application/json:
+#      #schema:
+#      #$ref: 'json/service_request.json'
+#      #example:
+#      #  $ref: 'json/service_request_example.json'
+#      responses:
+#        500:
+#          description: "thing"
+#          content:
+#            "application/json":
+#            schema:
+#            description: Error response
+#            type: object
+#            required:
+#              - reason
+#            properties:
+#              errorDescription:
+#                type: string
+#              reason:
+#                type: string
+#          example:
+#            {
+#              "reason": "jsonValidationError",
+#              "errorDescription": "Error occurred loading json or during json validation."
+#            }
+#        required: true
 
 something:
   $ref: "file/"
