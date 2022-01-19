@@ -25,6 +25,8 @@ from django.urls import re_path
 
 logger = logging.getLogger(__name__)
 
+# List of successful response status codes
+SUCCESS_CODES = [200, 201, 202, 204]
 
 def ramlwrap(file_path, function_map):
     """
