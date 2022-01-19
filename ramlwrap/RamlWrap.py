@@ -51,33 +51,18 @@ def ramlwrap(file_path, function_map):
                 # print(" -> %s \t: %s" % (verb, endpoint.summary))
                 # print(endpoint.schema)
                 my_action = Action()
-                print(endpoint.responses)
-                # look for the 200 (?) #FIXME what if 200 isn't default but others like no content
-                if '200' in endpoint.responses:
-                    # FIXME: don't hardcode application/json here!
-                    my_action.schema = endpoint.responses['200'].content['application/json'].schema
-                    examples = endpoint.responses['200'].content['application/json'].example
-                    if len(examples) > 0:
-                        for ex in examples:
-                            print(ex.values())
-                            my_action.example = ex
-                            break; #FIXME: wtf?
-                print("adding endpoint %s" % verb)
 
-
-                epoint.add_action(verb.upper(), my_action)
-
-                if '204' in endpoint.responses:
-                    # FIXME: don't hardcode application/json here!
-                    my_action.schema = endpoint.responses['204'].content['application/json'].schema
-                    examples = endpoint.responses['204'].content['application/json'].example
-                    if len(examples) > 0:
-                        for ex in examples:
-                            print(ex.values())
-                            my_action.example = ex
-                            break; #FIXME: wtf?
-                print("adding endpoint %s" % verb)
-                epoint.add_action(verb.upper(), my_action)
+                for code in SUCCESS_CODES:
+                    if code in endpoint.responses:
+                        my_action.schema = endpoint.responses[code].content['application/json'].schema
+                        examples = endpoint.responses[code].content['application/json'].example
+                        if len(examples) > 0:
+                            for ex in examples:
+                                print(ex.values())
+                                my_action.example = ex
+                                break; #FIXME: ?
+                    print("adding endpoint %s" % verb)
+                    epoint.add_action(verb.upper(), my_action)
 
             # FIXME: the endpoint parse_regex should be used at this point
  
