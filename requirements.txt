@@ -5,7 +5,7 @@ Django>=2.0
 jsonschema>=2.6.0
 
 # FIXME: fix version? Minimum?
-openapi_parser 
+openapi_parser>=0.2.6
 
 
 # Consider mock minm usage
