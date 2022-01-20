@@ -70,7 +70,7 @@ paths:
           description: A really unhappy server error.
   /api2:
     summary: API root
-    put:
+    get:
       #requestBody:
       #content:
       # application/json:
