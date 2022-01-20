@@ -218,7 +218,9 @@ def _validate_body(request, action):
     action.requ_content_type = request_content_type
 
     # Check the schema had content-types defined
+    # FIXME request_content_type_options is from raml but we have different in openapi
     if hasattr(action, 'request_content_type_options'):
+        print('<<<<<<', action)
         for x in action.request_content_type_options:
             # Check if the incoming content-type matches the allowed type in the schema and is JSON type
             if x == request_content_type == str(ContentType.JSON):
