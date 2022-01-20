@@ -14,6 +14,7 @@ Or (cough) as of v3, open api spec.
 As of March 2017, RamlWrap has been MIT license, see LICENSE 
 """
 import logging
+import json
 
 from . utils.validation import Endpoint, Action
 from . utils.exceptions import FatalException
@@ -45,7 +46,7 @@ def ramlwrap(file_path, function_map):
             # item.pretty_path
             # item.summary
             epoint = Endpoint(item.pretty_path)
-            print('>>>>>',item.endpoints.items())
+            print((item.endpoints))
             for verb, endpoint in item.endpoints.items():
                 # this now is with the item.pretty_path the GET / POST etc
                 # print(" -> %s \t: %s" % (verb, endpoint.summary))
@@ -54,13 +55,18 @@ def ramlwrap(file_path, function_map):
 
                 for code in SUCCESS_CODES:
                     if code in endpoint.responses:
-                        my_action.schema = endpoint.responses[code].content['application/json'].schema
+                        schemas = endpoint.responses[code].content['application/json'].schema
+                        if len(schemas) > 0:
+                            for sc in schemas:
+                                print('schema >>>>>>>>>', sc.values())
+                                my_action.schema = sc
+                                # break; #FIXME: ?
                         examples = endpoint.responses[code].content['application/json'].example
                         if len(examples) > 0:
                             for ex in examples:
-                                print(ex.values())
+                                print('example >>>>>>>>>', ex.values())
                                 my_action.example = ex
-                                break; #FIXME: ?
+                                # break; #FIXME: ?
                     print("adding endpoint %s" % verb)
                     epoint.add_action(verb.upper(), my_action)
 
