@@ -18,8 +18,6 @@ from django.contrib import admin
 
 from ramlwrap import ramlwrap
 from RamlWrapTest.apis.test_apis import dynamic_api_one, dynamic_api_two, regular_api
-from ramlwrap.views import noscript
-from ramlwrap.views import RamlDoc
 
 #x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml", template="ramlwrap_default_main.html")
 #x = RamlDoc(raml_file="RamlWrapTest/tests/fixtures/raml/test_dynamic.raml")
