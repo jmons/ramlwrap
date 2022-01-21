@@ -13,11 +13,7 @@ from django.test import TestCase, Client
 from django.test.client import RequestFactory
 
 from jsonschema.exceptions import ValidationError
-import sys
-import logging
 
-logger = logging.getLogger()
-logger.level = logging.DEBUG
 
 def _mock_post_target(request, dynamic_value=None):
     """Return true if the validated data is correct."""
@@ -50,8 +46,6 @@ class ValidationTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
-        stream_handler = logging.StreamHandler(sys.stdout)
-        logger.addHandler(stream_handler)
 
     def test_raml_schema_validation(self):
         """Test that when schema is present, it is used to
