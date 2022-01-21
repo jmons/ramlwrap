@@ -186,15 +186,16 @@ def _validate_api(request, action, dynamic_values=None):
         # all validated fine
         if action.target:
             answer = action.target
-            if answer is type(HttpRequest):
-                return answer
+            if dynamic_values:
+                # If there was a dynamic value, pass it through
+                return action.target(request, **dynamic_values)
             else:
-                return HttpResponse(json.dumps(answer), content_type="application/json")
+                if answer is type(HttpRequest):
+                    return answer
+                else:
+                    return HttpResponse(json.dumps(answer), content_type="application/json")
         else:
-            if action.example:
-                return _generate_example(action)
-            else:
-                raise Exception("panic")
+            return _generate_example(action)
 
 
 def _validate_body(request, action):
