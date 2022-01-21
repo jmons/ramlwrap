@@ -9,9 +9,83 @@ servers:
     description: Localhost Development server
 
 paths:
-  /api:
+  /get-api-with-json-response-schema:
     summary: API root
     get:
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                {
+                  "title": "test ",
+                  "description": "test",
+                  "type": "object",
+                  "required": [
+                      "device"
+                  ],
+                  "properties": {
+                    "device": {
+                      "description": "info",
+                      "type": "object",
+                      "required": [
+                          "type"
+                      ],
+                      "properties": {
+                        "type": {
+                          "description": "Type of device",
+                          "enum": [
+                              "IOS",
+                              "ANDROID"
+                          ]
+                        },
+                        "id": {
+                          "description": "id",
+                          "type": "string"
+                        },
+                        "osVersion": {
+                          "description": "os version",
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "version": {
+                      "description": "version",
+                      "type": "string"
+                    }
+                  }
+                }
+              example:
+                {
+                  "device": {
+                    "type": "IOS",
+                    "id": "123",
+                    "osVersion": "15"
+                  },
+                  "version": "1"
+                }
+        500:
+          description: A really unhappy server error.
+  /post-api:
+    summary: API root
+    post:
+      content:
+        "application/json":
+          schema:
+            title: 'Post API schema'
+            description: test
+            type: object
+            required:
+              - appId
+            properties:
+              appId:
+                description: info
+                type: string
+          example:
+            {
+              "appId": "5"
+            }
       responses:
         200:
           description: "thing"
@@ -68,16 +142,9 @@ paths:
 
         500:
           description: A really unhappy server error.
-  /api2:
+  /get-api-with-yaml-response-schema:
     summary: API root
     get:
-      #requestBody:
-      #content:
-      # application/json:
-      #schema:
-      #$ref: 'json/service_request.json'
-      #example:
-      #  $ref: 'json/service_request_example.json'
       responses:
         204:
           description: "thing"
