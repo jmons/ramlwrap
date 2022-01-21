@@ -1,0 +1,56 @@
+openapi: 3.0.0
+info:
+  title: Test RamlWrap API's
+  description: A series of useful APIs that can be used to test RamlWrap functionality.
+  version: 0.1.9
+
+servers:
+  - url: http://localhost:8000/
+    description: Localhost Development server
+
+paths:
+  /api3:
+    summary: API root
+    get:
+      #requestBody:
+      #content:
+      # application/json:
+      #schema:
+      #$ref: 'json/service_request.json'
+      #example:
+      #  $ref: 'json/service_request_example.json'
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                title: 'test '
+                description: test
+                type: object
+                required:
+                  - device
+                properties:
+                  device:
+                    description: info
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        description: Type of device
+                        enum:
+                          - IOS
+                          - ANDROID
+                      id:
+                        description: id
+                        type: string
+                      osVersion:
+                        description: os version
+                        type: string
+                  version:
+                    description: version
+                    type: string
+
+        500:
+          description: A really unhappy server error.
