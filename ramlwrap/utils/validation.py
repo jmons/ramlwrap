@@ -181,7 +181,7 @@ def _validate_api(request, action, dynamic_values=None):
         validate_error_response = _validate_body(request, action)
 
     if validate_error_response:
-        response = validate_error_response
+        return validate_error_response
     else:
         # all validated fine
         if action.target:
