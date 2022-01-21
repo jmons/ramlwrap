@@ -13,7 +13,11 @@ from django.test import TestCase, Client
 from django.test.client import RequestFactory
 
 from jsonschema.exceptions import ValidationError
+import sys
+import logging
 
+logger = logging.getLogger()
+logger.level = logging.DEBUG
 
 def _mock_post_target(request, dynamic_value=None):
     """Return true if the validated data is correct."""
@@ -46,6 +50,8 @@ class ValidationTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+        stream_handler = logging.StreamHandler(sys.stdout)
+        logger.addHandler(stream_handler)
 
     def test_raml_schema_validation(self):
         """Test that when schema is present, it is used to
@@ -119,7 +125,8 @@ class ValidationTestCase(TestCase):
 
         valid_content_types = [
             "application/json",
-            "application/x-www-form-urlencoded"
+            "application/x-www-form-urlencoded",
+            "application/json; charset=utf-8"
         ]
 
         for content_type in valid_content_types:
@@ -140,7 +147,7 @@ class ValidationTestCase(TestCase):
             response = self.client.post('/api/multi_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 422)
 
-    def test_post_with_no_content_types(self):
+    def test_post_with_no_content_types_in_schema(self):
         """
         Check that making a request with a content type
         but to a url which has no defined content types in the schema, passes
@@ -157,6 +164,14 @@ class ValidationTestCase(TestCase):
         for content_type in content_types:
             response = self.client.post('/api/no_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 200)
+
+    def test_post_with_no_content_type_in_request(self):
+        """
+        Check that an empty content-type in request results in 415 error
+        """
+
+        response = self.client.post('/api/multi_content_type', data="{}", content_type="")
+        self.assertEquals(response.status_code, 415)
 
     def test_validation_handler(self):
         """
