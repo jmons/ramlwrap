@@ -21,30 +21,6 @@ class FatalException(Exception):
     Custom CBP Exception, allows custom status_code definition.
     """
 
-    status_code = None  # Will default to 400 in constructor
-    message = ""  # Error message is set in constructor
-    errors = None
-    public_message = "Sorry, there has been an error. Please check the server logs. (Middleware)"
-
-    def __init__(self, message, status_code=400, errors=None, public_message=None):
-
-        self.status_code = status_code
-
-        if public_message:
-            self.public_message = public_message
-
-        self.errors = errors
-        self.message = message
-
-    def __str__(self):
-        return repr(self.message)
-
-
-class FatalException(Exception):
-    """
-    Custom CBP Exception, allows custom status_code definition.
-    """
-    
     default_code = 500
 
     status_code = None  # Will default to 400 in constructor
@@ -66,3 +42,16 @@ class FatalException(Exception):
 
     def __str__(self):
         return repr(self.message)
+
+
+class UnsupportedMediaTypeException(Exception):
+    """
+    Exception to be raised if no content type is passed in
+    """
+
+    status_code = 415  # Will default to 400 in constructor
+    message = ""  # Error message is set in constructor
+
+    def __init__(self, message, status_code=415):
+        self.status_code = status_code
+        self.message = message

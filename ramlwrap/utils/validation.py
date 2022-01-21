@@ -12,7 +12,7 @@ from django.conf import settings
 from django.http.response import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from . exceptions import FatalException
+from . exceptions import FatalException, UnsupportedMediaTypeException
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ def _validate_query_params(params, checks):
 
 def _generate_example(action):
     """
-    This is used by both GET and POST when returning an example 
+    This is used by both GET and POST when returning an example
     """
     # The original method of generating straight from the example is bad
     # because v2 parser now has an object, which also allows us to do the
@@ -204,21 +204,34 @@ def _validate_api(request, action, dynamic_values=None):
 
 def _validate_body(request, action):
     error_response = None
-
-    # Grab the content-type coming in from the request
-    if "headers" in request.META:
-        request_content_type = request.META["headers"]["content-type"]
-
-    else:
-        request_content_type = request.META["CONTENT_TYPE"]
-
     content_type_matched = False
+
+    try:
+        # Grab the content-type coming in from the request
+        if "headers" in request.META:
+            request_content_type = request.META["headers"]["content-type"]
+
+        else:
+            request_content_type = request.META["CONTENT_TYPE"]
+    except Exception:
+        # couldn't find the content-type header so error
+        error_response = _validation_error_handler(UnsupportedMediaTypeException("Missing Content Type for this request"))
+        return error_response
+
+    if not request_content_type:
+        # content-type is empty so error
+        error_response = _validation_error_handler(UnsupportedMediaTypeException("Missing Content Type for this request"))
+        return error_response
+
+    # Parse the content type coming in (in case there are multiple optional entries)
+    request_content_type = request_content_type.replace(' ', '').split(';')[0]
 
     # Set the actual content_type we are using in this request
     action.requ_content_type = request_content_type
 
     # Check the schema had content-types defined
     if hasattr(action, 'request_content_type_options'):
+
         for x in action.request_content_type_options:
             # Check if the incoming content-type matches the allowed type in the schema and is JSON type
             if x == request_content_type == str(ContentType.JSON):
@@ -288,6 +301,11 @@ def _validation_error_handler(e):
         }
         logger.info(message)
         error_resp = JsonResponse(error_response, status=422)
+
+    elif isinstance(e, UnsupportedMediaTypeException):
+        error_response = {'message': e.message}
+        error_resp = JsonResponse(error_response, status=415)
+
     else:
         raise FatalException('Malformed JSON in the request.', 400)
 
