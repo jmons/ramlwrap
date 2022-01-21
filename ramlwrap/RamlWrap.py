@@ -55,13 +55,13 @@ def ramlwrap(file_path, function_map):
 
                 for code in SUCCESS_CODES:
                     if code in endpoint.responses:
-                        schemas = endpoint.responses[code].content['application/json'].schema
+                        schemas = endpoint.responses[code].content.get('application/json', dict()).schema
                         if len(schemas) > 0:
                             for sc in schemas:
                                 print('schema >>>>>>>>>', sc.values())
                                 my_action.schema = sc
                                 # break; #FIXME: ?
-                        examples = endpoint.responses[code].content['application/json'].example
+                        examples = endpoint.responses[code].get('application/json', dict()).example
                         if len(examples) > 0:
                             for ex in examples:
                                 print('example >>>>>>>>>', ex.values())
