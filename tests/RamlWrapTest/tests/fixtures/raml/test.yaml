@@ -129,7 +129,7 @@ paths:
                   appId:
                     description: info
                     type: string
-  /post-api:
+  /post-api-yaml-schema:
     summary: API root
     post:
       content:
@@ -189,6 +189,12 @@ paths:
                   },
                   "version": "1"
                 }
+  /post-api-no-request-schema-or-example:
+    description: Example API with empty post body.
+    post:
+      responses:
+        201:
+          description: Looks good.
   /api-with-query-params:
     summary: API with defined query parameters
     description: Example API with get and post request with query parameters.
@@ -269,6 +275,46 @@ paths:
           content:
             "application/json":
                example: {"exampleData": "You just made a POST request"}
+  /put-api:
+    description: Example PUT API
+    put:
+      responses:
+        200:
+          description: PUT API response
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a PUT request"}
+  /patch-api:
+    description: Example PATCH API
+    patch:
+      responses:
+        200:
+          description: PATCH API response
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a PATCH request"}
+  /delete-api:
+    description: Example DELETE API
+    delete:
+      responses:
+        200:
+          description: DELETE API response
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a DELETE request"}
+  /multi-example:
+    displayName: Multiple examples in RAML
+    get:
+      responses:
+        200:
+          description: Multi example response
+          content:
+            "application/json":
+              examples:
+                one:
+                  { "exampleData": "This is the first example response" }
+                two:
+                  { "exampleData2": "This is a second example" }
 #  /api4error:
 #    summary: API root
 #    get:
@@ -341,39 +387,8 @@ something:
 #           application/json:
 #             example: !include json/example2.json
 
-#   /4:
-#     displayName: API 4
-#     description: Example API with empty post body.
-#     post:
-#       responses:
-#         200:
-#           description: Looks good.
-#   /5:
-#     displayName: API 5
-#     description: Example PUT API
-#     put:
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#                 example: {"exampleData": "You just made a PUT request"}
-#   /patch-api:
-#     displayName: API for testing PATCH
-#     description: Example PATCH API
-#     patch:
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#                 example: {"exampleData": "You just made a PATCH request"}
-#   /delete-api:
-#     displayName: API for testing DELETE
-#     description: Example DELETE API
-#     delete:
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#                 example: {"exampleData": "You just made a DELETE request"}
+#
+
+
 
 

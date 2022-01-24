@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
 from ramlwrap import ramlwrap
 from ramlwrap.utils.raml import raml_url_patterns
@@ -56,18 +56,19 @@ class RamlWrapTestCase(TestCase):
     def test_pattern_urls_from_raml(self):
         """Test that given a raml file the patterns are generated with the correct urls."""
         funcmap = {}
-        patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.raml", funcmap)
+        patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.yaml", funcmap)
         expected_urls = [
-            "api",
-            "api/1",
-            "api/1/1.1",
-            "api/1/1.1/1.1.1",
-            "api/2",
-            "api/3",
-            "api/4",
-            "api/5",
-            "api/patch-api",
-            "api/delete-api"
+            "get-api-with-json-response-schema",
+            "get-api-with-yaml-response-schema",
+            "get-api-with-no-example",
+            "post-api-yaml-schema",
+            "post-api-no-request-schema-or-example",
+            "api-with-query-params",
+            "multi_content_type",
+            "no_content_type",
+            "put-api",
+            "patch-api",
+            "delete-api"
         ]
 
         for expected_url in expected_urls:
@@ -97,8 +98,8 @@ class RamlWrapTestCase(TestCase):
             "api/2": {"GET": {}},
             "api/3": {"GET": {}},
             "api/4": {"POST": {}},
-            "api/5": {"PUT": {}},
-            "api/patch-api": {"PATCH": {}},
+            "put-api": {"PUT": {}},
+            "patch-api": {"PATCH": {}},
             "api/delete-api": {"DELETE": {}},
             "api/multi_content_type": {"POST": {}},
             "api/no_content_type": {"POST": {}},
@@ -140,7 +141,7 @@ class RamlWrapTestCase(TestCase):
         """
 
         expected_data = {"exampleData": "You just made a GET!"}
-        response = self.client.get("/api/3?param2=sixsix")
+        response = self.client.get("/api-with-query-params?param2=sixsix")
 
         reply_data = response.content.decode("utf-8")
 
@@ -155,7 +156,7 @@ class RamlWrapTestCase(TestCase):
 
         expected_data = {"exampleData": "You just made a PUT request"}
 
-        response = self.client.put("/api/5", content_type="application/json")
+        response = self.client.put("/put-api", content_type="application/json")
         reply_data = response.content.decode("utf-8")
 
         self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header

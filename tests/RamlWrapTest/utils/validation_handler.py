@@ -6,7 +6,7 @@ and customised validation responses.
 from django.http.response import HttpResponse
 
 
-def custom_validation_response(e):
+def custom_validation__http_418_response(e):
     """
     Custom validation handler to override the default
     and return a HttpResponse I'm a teapot code.
@@ -15,7 +15,7 @@ def custom_validation_response(e):
     return HttpResponse(status=418)
 
 
-def custom_validation_exception(e):
+def custom_validation__raises_exception(e):
     """
     Custom validation handler to override the default
     and raise an exception.
