@@ -1,5 +1,4 @@
-#%RAML 0.8
----
+openapi: 3.0.0
 title: Test RamlWrap API
 description: A series of useful APIs that can be used to test RamlWrap functionality.
 version:  v0.1

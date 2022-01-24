@@ -63,6 +63,6 @@ class JsonRequestBodyValidationInlineYamlSchemaTestCase(TestCase):
             "version": "1"
         }
         response = self.client.post("/post-api", data=json.dumps(invalid_request_body), content_type="application/json")
-        self.assertEquals(422, response.status_code)
+        self.assertEquals(422, response.status_code, "Invalid JSON format should return 422")
         self.assertEqual({"message": "Validation failed. 'appId' is a required property", "code": "required"},
                          json.loads(response.content.decode('utf-8')))

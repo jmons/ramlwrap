@@ -10,7 +10,7 @@ servers:
 
 paths:
   /get-api-with-json-response-schema:
-    summary: API root
+    summary: Test GET apis with a json response schema
     get:
       responses:
         200:
@@ -65,81 +65,6 @@ paths:
                   },
                   "version": "1"
                 }
-        500:
-          description: A really unhappy server error.
-  /post-api:
-    summary: API root
-    post:
-      content:
-        "application/json":
-          schema:
-            title: 'Post API schema'
-            description: test
-            type: object
-            required:
-              - appId
-            properties:
-              appId:
-                description: info
-                type: string
-          example:
-            {
-              "appId": "5"
-            }
-      responses:
-        200:
-          description: "thing"
-          content:
-            "application/json":
-              schema:
-                {
-                  "title": "test ",
-                  "description": "test",
-                  "type": "object",
-                  "required": [
-                      "device"
-                  ],
-                  "properties": {
-                    "device": {
-                      "description": "info",
-                      "type": "object",
-                      "required": [
-                          "type"
-                      ],
-                      "properties": {
-                        "type": {
-                          "description": "Type of device",
-                          "enum": [
-                              "IOS",
-                              "ANDROID"
-                          ]
-                        },
-                        "id": {
-                          "description": "id",
-                          "type": "string"
-                        },
-                        "osVersion": {
-                          "description": "os version",
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "version": {
-                      "description": "version",
-                      "type": "string"
-                    }
-                  }
-                }
-              example:
-                {
-                  "device": {
-                    "type": "IOS",
-                    "id": "123",
-                    "osVersion": "15"
-                  },
-                  "version": "1"
-                }
-
         500:
           description: A really unhappy server error.
   /get-api-with-yaml-response-schema:
@@ -189,51 +114,135 @@ paths:
 
         422:
           description: A really unhappy post server error.
-#  /api3/no/example:
-#    summary: API root
-#    get:
-#      #requestBody:
-#      #content:
-#      # application/json:
-#      #schema:
-#      #$ref: 'json/service_request.json'
-#      #example:
-#      #  $ref: 'json/service_request_example.json'
-#      responses:
-#        200:
-#          description: "thing"
-#          content:
-#            "application/json":
-#              schema:
-#                title: 'test '
-#                description: test
-#                type: object
-#                required:
-#                  - device
-#                properties:
-#                  device:
-#                    description: info
-#                    type: object
-#                    required:
-#                      - type
-#                    properties:
-#                      type:
-#                        description: Type of device
-#                        enum:
-#                          - IOS
-#                          - ANDROID
-#                      id:
-#                        description: id
-#                        type: string
-#                      osVersion:
-#                        description: os version
-#                        type: string
-#                  version:
-#                    description: version
-#                    type: string
-#
-#        500:
-#          description: A really unhappy server error.
+  /get-api-with-no-example:
+    summary: API with no example
+    get:
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                title: 'Post API schema'
+                description: test
+                type: object
+                required:
+                  - appId
+                properties:
+                  appId:
+                    description: info
+                    type: string
+  /post-api:
+    summary: API root
+    post:
+      content:
+        "application/json":
+          schema:
+            title: 'Post API schema'
+            description: test
+            type: object
+            required:
+              - appId
+            properties:
+              appId:
+                description: info
+                type: string
+          example:
+            {
+              "appId": "5"
+            }
+      responses:
+        200:
+          description: "thing"
+          content:
+            "application/json":
+              schema:
+                title: 'test '
+                description: test
+                type: object
+                required:
+                  - device
+                properties:
+                  device:
+                    description: info
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        description: Type of device
+                        enum:
+                          - IOS
+                          - ANDROID
+                      deviceid:
+                        description: id
+                        type: string
+                      osVersion:
+                        description: os version
+                        type: string
+                  type:
+                    description: type
+                    type: string
+              example:
+                {
+                  "device": {
+                    "type": "IOS",
+                    "id": "123",
+                    "osVersion": "15"
+                  },
+                  "version": "1"
+                }
+
+        500:
+          description: A really unhappy server error.
+  /api-with-query-params:
+    summary: API with defined query parameters
+    description: Example API with get and post request with query parameters.
+    get:
+      parameters:
+        param1:
+          name: param1
+          in: query
+          required: false
+          schema:
+            type: string
+        param2:
+          name: param2
+          in: query
+          required: true
+          schema:
+            type: string
+        param3:
+          name: param3
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Response to API with query params
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a GET!"}
+#   post:
+#     parameters:
+#       param1:
+#         type: string
+#         required: false
+#       param2:
+#         type: string
+#         minLength: 5
+#         maxLength: 10
+#         required: true
+#       param3:
+#         type: number
+#         required: false
+#     responses:
+#       200:
+#         content:
+#           "application/json":
+#             example: {"exampleData": "You just made a POST!"}
+
 #  /api4error:
 #    summary: API root
 #    get:
@@ -306,45 +315,7 @@ something:
 #         body:
 #           application/json:
 #             example: !include json/example2.json
-# /api/3:
-#   displayName: API 3
-#   description: Example API with get and post request with query parameters.
-#   get:
-#     queryParameters:
-#       param1:
-#         type: string
-#         required: false
-#       param2:
-#         type: string
-#         minLength: 5
-#         maxLength: 10
-#         required: true
-#       param3:
-#         type: number
-#         required: false
-#     responses:
-#       200:
-#         body:
-#           application/json:
-#             example: {"exampleData": "You just made a GET!"}
-#     post:
-#       queryParameters:
-#         param1:
-#           type: string
-#           required: false
-#         param2:
-#           type: string
-#           minLength: 5
-#           maxLength: 10
-#           required: true
-#         param3:
-#           type: number
-#           required: false
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#               example: {"exampleData": "You just made a POST!"}
+
 #   /4:
 #     displayName: API 4
 #     description: Example API with empty post body.
