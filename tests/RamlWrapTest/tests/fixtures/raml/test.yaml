@@ -65,9 +65,6 @@ paths:
                   },
                   "version": "1"
                 }
-        500:
-          description: A really unhappy server error.
-<<<<<<< HEAD
   /get-api-with-yaml-response-schema:
     summary: API root
     get:
@@ -112,7 +109,6 @@ paths:
                   },
                   "type": "1"
                 }
-
         422:
           description: A really unhappy post server error.
   /get-api-with-no-example:
@@ -193,57 +189,86 @@ paths:
                   },
                   "version": "1"
                 }
-
-        500:
-          description: A really unhappy server error.
   /api-with-query-params:
     summary: API with defined query parameters
     description: Example API with get and post request with query parameters.
     get:
       parameters:
-        param1:
-          name: param1
-          in: query
-          required: false
-          schema:
-            type: string
-        param2:
-          name: param2
-          in: query
-          required: true
-          schema:
-            type: string
-        param3:
-          name: param3
-          in: query
-          required: false
-          schema:
-            type: integer
+      - param1:
+        name: param1
+        in: query
+        required: false
+        schema:
+          type: string
+      param2:
+      - name: param2
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 5
+          maxLength: 10
+      param3:
+      - name: param3
+        in: query
+        required: false
+        schema:
+          type: integer
       responses:
         200:
-          description: Response to API with query params
+          description: Response to GET API with query params
           content:
             "application/json":
               example: {"exampleData": "You just made a GET!"}
-#   post:
-#     parameters:
-#       param1:
-#         type: string
-#         required: false
-#       param2:
-#         type: string
-#         minLength: 5
-#         maxLength: 10
-#         required: true
-#       param3:
-#         type: number
-#         required: false
-#     responses:
-#       200:
-#         content:
-#           "application/json":
-#             example: {"exampleData": "You just made a POST!"}
-
+    post:
+      parameters:
+      - param1:
+        name: param1
+        in: query
+        required: false
+        schema:
+          type: string
+      - param2:
+        name: param2
+        in: query
+        required: true
+        schema:
+          type: string
+      - param3:
+        name: param3
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Response to POST API with query params
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a POST!"}
+  /multi_content_type:
+    summary: API for testing multiple content types
+    description: Example POST API
+    post:
+      content:
+        "application/json":
+        "application/x-www-form-urlencoded":
+      responses:
+        200:
+          description: Response for multi type content API
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a POST request"}
+  /no_content_type:
+    summary: API for testing with no defined content types
+    description: Example POST API
+    post:
+      responses:
+        200:
+          description: Response to no content type API
+          content:
+            "application/json":
+               example: {"exampleData": "You just made a POST request"}
 #  /api4error:
 #    summary: API root
 #    get:
@@ -291,9 +316,6 @@ something:
     #         body:
     #           application/json:
 
-
-=======
->>>>>>> v3_openapi
 
 # /api/1/1.1:
 #   displayName: API 1.1
@@ -353,24 +375,5 @@ something:
 #           body:
 #             application/json:
 #                 example: {"exampleData": "You just made a DELETE request"}
-#   /multi_content_type:
-#     displayName: API for testing multiple content types
-#     description: Example POST API
-#     post:
-#       body:
-#         application/json:
-#         application/x-www-form-urlencoded:
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#                  example: {"exampleData": "You just made a POST request"}
-#   /no_content_type:
-#       displayName: API for testing with no defined content types
-#       description: Example POST API
-#       post:
-#         responses:
-#           200:
-#             body:
-#               application/json:
-#                    example: {"exampleData": "You just made a POST request"}
+
+

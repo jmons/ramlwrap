@@ -26,7 +26,7 @@ class ContentTypeTestCase(TestCase):
         ]
 
         for content_type in valid_content_types:
-            response = self.client.post('/api/multi_content_type', data="{}", content_type=content_type)
+            response = self.client.post('/multi_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 200)
 
     def test_post_with_invalid_content_types(self):
@@ -40,7 +40,7 @@ class ContentTypeTestCase(TestCase):
         ]
 
         for content_type in valid_content_types:
-            response = self.client.post('/api/multi_content_type', data="{}", content_type=content_type)
+            response = self.client.post('/multi_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 422)
 
     def test_post_with_no_content_types(self):
@@ -58,5 +58,5 @@ class ContentTypeTestCase(TestCase):
         ]
 
         for content_type in content_types:
-            response = self.client.post('/api/no_content_type', data="{}", content_type=content_type)
+            response = self.client.post('/no_content_type', data="{}", content_type=content_type)
             self.assertEquals(response.status_code, 200)
