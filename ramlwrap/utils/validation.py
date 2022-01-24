@@ -206,6 +206,7 @@ def _validate_body(request, action):
             # Validate agains the schema
             try:
                 data = json.loads(request.body.decode('utf-8'))
+                # against json schema its fine, but openapi parser can parse it to json?
                 validate(data, action.schema)
             except Exception as e:
                 error_response = _validation_error_handler(e)
