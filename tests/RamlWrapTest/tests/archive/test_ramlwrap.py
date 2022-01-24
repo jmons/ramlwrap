@@ -32,7 +32,7 @@ def _internal_mock_post(request, example):
     return json.loads(request.validated_data)
 
 
-class RamlWrapTestCase(TestCase):
+class RamlWrapTestCase():
     client = None
 
     def setUp(self):
@@ -65,8 +65,8 @@ class RamlWrapTestCase(TestCase):
             "api/2",
             "api/3",
             "api/4",
-            "api/5",
-            "api/patch-api",
+            "put-api",
+            "patch-api",
             "api/delete-api"
         ]
 
@@ -97,8 +97,8 @@ class RamlWrapTestCase(TestCase):
             "api/2": {"GET": {}},
             "api/3": {"GET": {}},
             "api/4": {"POST": {}},
-            "api/5": {"PUT": {}},
-            "api/patch-api": {"PATCH": {}},
+            "put-api": {"PUT": {}},
+            "patch-api": {"PATCH": {}},
             "api/delete-api": {"DELETE": {}},
             "api/multi_content_type": {"POST": {}},
             "api/no_content_type": {"POST": {}},
@@ -140,7 +140,7 @@ class RamlWrapTestCase(TestCase):
         """
 
         expected_data = {"exampleData": "You just made a GET!"}
-        response = self.client.get("/api/3?param2=sixsix")
+        response = self.client.get("/api-with-query-params?param2=sixsix")
 
         reply_data = response.content.decode("utf-8")
 
@@ -155,7 +155,7 @@ class RamlWrapTestCase(TestCase):
 
         expected_data = {"exampleData": "You just made a PUT request"}
 
-        response = self.client.put("/api/5", content_type="application/json")
+        response = self.client.put("/put-api", content_type="application/json")
         reply_data = response.content.decode("utf-8")
 
         self.assertEqual("application/json", response["Content-Type"])  # note Capitalisation difference as a header

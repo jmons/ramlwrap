@@ -9,7 +9,7 @@ from ramlwrap.views import RamlDoc
 from django.test import TestCase, Client
 
 
-class RamlApiDocsTestCase(TestCase):
+class RamlApiDocsTestCase():
 
     def setUp(self):
         doc = RamlDoc()

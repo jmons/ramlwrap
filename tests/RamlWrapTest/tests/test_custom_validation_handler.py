@@ -25,7 +25,7 @@ class ContentTypeTestCase(TestCase):
 
         # Test that the custom method is called and a response is returned.
         settings.RAMLWRAP_VALIDATION_ERROR_HANDLER = "RamlWrapTest.utils.validation_handler.custom_validation_response"
-        response = self.client.post("/post-api", data="{}", content_type="application/json")
+        response = self.client.post("/post-api-yaml-schema", data="{}", content_type="application/json")
         self.assertEquals(418, response.status_code)
 
         # Test that the custom method is called and an exception is raised.

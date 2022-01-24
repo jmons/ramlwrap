@@ -52,7 +52,7 @@ class ActionsTestCase(TestCase):
         action.resp_content_type = ContentType.JSON
         action.target = _mock_post_target
         request = RequestFactory().post(
-            path="api/4",
+            path="post-api-no-request-schema-or-example",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")
 
@@ -65,7 +65,7 @@ class ActionsTestCase(TestCase):
         action = Action()
         action.target = _mock_get_target
         action.resp_content_type = ContentType.JSON
-        request = RequestFactory().get("api/3", {"param1": 2, "param2": "hello"})
+        request = RequestFactory().get("/api-with-query-params", {"param1": 2, "param2": "hello"})
 
         resp = _validate_api(request, action)
         self.assertTrue(resp.__class__ is HttpResponse)
@@ -77,7 +77,7 @@ class ActionsTestCase(TestCase):
         action = Action()
         action.target = _mock_post_target_json_resp
         action.resp_content_type = ContentType.JSON
-        request = RequestFactory().post("/api/3?param2=one2345&param3=2")
+        request = RequestFactory().post("/api-with-query-params?param2=one2345&param3=2")
 
         resp = _validate_api(request, action)
         self.assertTrue(resp.__class__ is HttpResponse)
@@ -87,14 +87,14 @@ class ActionsTestCase(TestCase):
         """Test that when a request is made for an
         unsupported method, a 405 is returned with correct list of permitted methods.
         """
-        endpoint = Endpoint("/api/3")
+        endpoint = Endpoint("/api-with-query-params")
         endpoint.request_method_mapping = {
             "GET": {},
             "POST": {}
         }
 
         request = RequestFactory().generic(
-            "/api/3",
+            "/api-with-query-params",
             "UNSUPPORTED_METHOD",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")
@@ -110,13 +110,13 @@ class ActionsTestCase(TestCase):
         method, a 405 is returned with correct list of permitted methods.
         """
 
-        endpoint = Endpoint("/api/3")
+        endpoint = Endpoint("/api-with-query-params")
         endpoint.request_method_mapping = {
             "GET": {},
         }
 
         request = RequestFactory().post(
-            "/api/3",
+            "/api-with-query-params",
             data=json.dumps({"testkey": "testvalue"}),
             content_type="application/json")
 

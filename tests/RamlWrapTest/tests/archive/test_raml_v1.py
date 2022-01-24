@@ -27,7 +27,7 @@ def _internal_mock_post(request, example):
     return json.loads(request.validated_data)
 
 
-class RamlWrapv1TestCase(TestCase):
+class RamlWrapv1TestCase():
     client = None
 
     def setUp(self):
