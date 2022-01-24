@@ -171,9 +171,9 @@ def _validate_api(request, action, dynamic_values=None):
     """
 
     # FIXME validate query params in later stages
-    # if action.query_parameter_checks:
-    #     # Following raises exception on fail or passes through.
-    #     _validate_query_params(request.GET, action.query_parameter_checks)
+    if action.query_parameter_checks:
+        # Following raises exception on fail or passes through.
+        _validate_query_params(request.GET, action.query_parameter_checks)
 
     validate_error_response = None
 
