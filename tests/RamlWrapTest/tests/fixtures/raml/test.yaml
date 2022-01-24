@@ -293,6 +293,28 @@ paths:
           content:
             "application/json":
               example: {"exampleData": "You just made a PATCH request"}
+  /delete-api:
+    description: Example DELETE API
+    delete:
+      responses:
+        200:
+          description: DELETE API response
+          content:
+            "application/json":
+              example: {"exampleData": "You just made a DELETE request"}
+  /multi-example:
+    displayName: Multiple examples in RAML
+    get:
+      responses:
+        200:
+          description: Multi example response
+          content:
+            "application/json":
+              examples:
+                one:
+                  { "exampleData": "This is the first example response" }
+                two:
+                  { "exampleData2": "This is a second example" }
 #  /api4error:
 #    summary: API root
 #    get:
@@ -367,14 +389,6 @@ something:
 
 #
 
-#   /delete-api:
-#     displayName: API for testing DELETE
-#     description: Example DELETE API
-#     delete:
-#       responses:
-#         200:
-#           body:
-#             application/json:
-#                 example: {"exampleData": "You just made a DELETE request"}
+
 
 

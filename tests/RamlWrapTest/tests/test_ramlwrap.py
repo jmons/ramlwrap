@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
 from ramlwrap import ramlwrap
 from ramlwrap.utils.raml import raml_url_patterns
@@ -32,7 +32,7 @@ def _internal_mock_post(request, example):
     return json.loads(request.validated_data)
 
 
-class RamlWrapTestCase():
+class RamlWrapTestCase(TestCase):
     client = None
 
     def setUp(self):
@@ -56,18 +56,19 @@ class RamlWrapTestCase():
     def test_pattern_urls_from_raml(self):
         """Test that given a raml file the patterns are generated with the correct urls."""
         funcmap = {}
-        patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.raml", funcmap)
+        patterns = raml_url_patterns("RamlWrapTest/tests/fixtures/raml/test.yaml", funcmap)
         expected_urls = [
-            "api",
-            "api/1",
-            "api/1/1.1",
-            "api/1/1.1/1.1.1",
-            "api/2",
-            "api/3",
-            "api/4",
+            "get-api-with-json-response-schema",
+            "get-api-with-yaml-response-schema",
+            "get-api-with-no-example",
+            "post-api-yaml-schema",
+            "post-api-no-request-schema-or-example",
+            "api-with-query-params",
+            "multi_content_type",
+            "no_content_type",
             "put-api",
             "patch-api",
-            "api/delete-api"
+            "delete-api"
         ]
 
         for expected_url in expected_urls:
