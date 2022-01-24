@@ -67,6 +67,7 @@ paths:
                 }
         500:
           description: A really unhappy server error.
+<<<<<<< HEAD
   /get-api-with-yaml-response-schema:
     summary: API root
     get:
@@ -291,6 +292,8 @@ something:
     #           application/json:
 
 
+=======
+>>>>>>> v3_openapi
 
 # /api/1/1.1:
 #   displayName: API 1.1
