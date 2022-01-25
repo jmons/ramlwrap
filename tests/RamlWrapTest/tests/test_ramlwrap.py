@@ -50,8 +50,8 @@ class RamlWrapTestCase(TestCase):
     #    with self.assertRaises(Exception):
     #        ramlwrap("RamlWrapTest/tests/fixtures/raml/test_missing_attribute.raml", {})
 
-    def test_pattern_urls_from_raml(self):
-        """Test that given a raml file the patterns are generated with the correct urls."""
+    def test_paths_from_yaml(self):
+        """Test that given a yaml file the patterns are generated with the correct urls."""
 
         parser = OpenApiParser.open("RamlWrapTest/tests/fixtures/raml/test.yaml")
         parser.load_all()
@@ -77,7 +77,6 @@ class RamlWrapTestCase(TestCase):
 
             if not found:
                 self.fail("[%s] entrypoint example did not match expected." % expected_url)
-
 
 
     def test_raml_post_example_returned(self):
