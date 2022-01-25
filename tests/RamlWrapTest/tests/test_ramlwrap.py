@@ -40,11 +40,6 @@ class RamlWrapTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_file_formats(self):
-        """Test that if the file extension isn't raml then an exception is raised."""
-        error_message = "The file: 'RamlWrapTest/tests/fixtures/raml/test.txt' does not have a .raml extension!"
-        with self.assertRaisesMessage(FatalException, error_message):
-            ramlwrap("RamlWrapTest/tests/fixtures/raml/test.txt", {})
 
     # FIXME new parser loads the empty file without erroring
     # def test_error_parsing_file(self):
@@ -63,29 +58,24 @@ class RamlWrapTestCase(TestCase):
         parser = OpenApiParser.open("RamlWrapTest/tests/fixtures/raml/test.yaml")
         parser.load_all()
         expected_urls = [
-            "get-api-with-json-response-schema",
-            "get-api-with-yaml-response-schema",
-            "get-api-with-no-example",
-            "post-api-yaml-schema",
-            "post-api-no-request-schema-or-example",
-            "api-with-query-params",
-            "multi_content_type",
-            "no_content_type",
-            "put-api",
-            "patch-api",
-            "delete-api"
+            "/get-api-with-json-response-schema",
+            "/get-api-with-yaml-response-schema",
+            "/get-api-with-no-example",
+            "/post-api-yaml-schema",
+            "/post-api-no-request-schema-or-example",
+            "/api-with-query-params",
+            "/multi_content_type",
+            "/no_content_type",
+            "/put-api",
+            "/patch-api",
+            "/delete-api"
         ]
 
         for expected_url in expected_urls:
             found = False
             for path, item in parser.path_items.items():
-                version = django.get_version()
-                if StrictVersion("2.0.0") >= StrictVersion(version):
-                    if path.regex.match(expected_url):
-                        found = True
-                else:
-                    if path.pattern.match(expected_url):
-                        found = True
+                if path in expected_url:
+                    found = True
 
             if not found:
                 self.fail("[%s] entrypoint example did not match expected." % expected_url)
